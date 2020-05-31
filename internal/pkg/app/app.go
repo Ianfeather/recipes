@@ -23,5 +23,6 @@ func rootHandler(w http.ResponseWriter, req *http.Request) {
 func (a *App) GetRouter() (http.Handler, error) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", rootHandler).Methods("GET")
+	router.HandleFunc("/recipe", a.recipeHandler)
 	return router, nil
 }
