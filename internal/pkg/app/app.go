@@ -1,6 +1,7 @@
 package app
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -15,14 +16,22 @@ func NewApp() (*App, error) {
 	return app, nil
 }
 
-func rootHandler(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("Success from the handler"))
+func healthHandler(w http.ResponseWriter, req *http.Request) {
+	w.Write([]byte("ok"))
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		log.Println(req.RequestURI)
+		next.ServeHTTP(w, req)
+	})
 }
 
 // GetRouter returns the application router
 func (a *App) GetRouter() (http.Handler, error) {
 	router := mux.NewRouter()
-	router.HandleFunc("/", rootHandler).Methods("GET")
+	router.HandleFunc("/health", healthHandler).Methods("GET")
 	router.HandleFunc("/recipe", a.recipeHandler)
+	router.Use(loggingMiddleware)
 	return router, nil
 }
