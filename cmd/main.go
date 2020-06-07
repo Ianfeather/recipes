@@ -1,14 +1,27 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"recipes/internal/pkg/app"
+	"recipes/internal/pkg/common"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
-	application, err := app.NewApp()
+	db, err := sql.Open("mysql", "recipe_app@tcp(127.0.0.1:3306)/shoppinglist")
+
+	if err != nil {
+		fmt.Println("Failed to connect to database")
+		panic(err.Error())
+	}
+
+	env := &common.Env{DB: db}
+
+	application, err := app.NewApp(env)
 
 	if err != nil {
 		fmt.Println("Failed to create application")
@@ -29,4 +42,5 @@ func main() {
 	}
 
 	server.ListenAndServe()
+	defer db.Close()
 }

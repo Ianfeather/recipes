@@ -1,18 +1,24 @@
 package app
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
+	"recipes/internal/pkg/common"
 
 	"github.com/gorilla/mux"
 )
 
 // App will hold the dependencies of the application
-type App struct{}
+type App struct {
+	db *sql.DB
+}
 
 // NewApp returns the application itself
-func NewApp() (*App, error) {
-	app := &App{}
+func NewApp(env *common.Env) (*App, error) {
+	app := &App{
+		db: env.DB,
+	}
 	return app, nil
 }
 
@@ -31,7 +37,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 func (a *App) GetRouter() (http.Handler, error) {
 	router := mux.NewRouter()
 	router.HandleFunc("/health", healthHandler).Methods("GET")
-	router.HandleFunc("/recipe", a.recipeHandler).Methods("GET")
+	router.HandleFunc("/recipe/{slug}", a.recipeHandler).Methods("GET")
 	router.HandleFunc("/recipe", a.addRecipeHandler).Methods("POST")
 	router.Use(loggingMiddleware)
 	return router, nil
