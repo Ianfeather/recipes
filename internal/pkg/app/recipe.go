@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
+	"recipes/internal/pkg/common"
 
 	"github.com/gorilla/mux"
 )
@@ -21,20 +21,6 @@ type Recipe struct {
 	Name        string       `json:"name"`
 	ID          int          `json:"id"`
 	Ingredients []Ingredient `json:"ingredients"`
-}
-
-// Min returns the smaller of x or y.
-func Min(x, y int) int {
-	if x > y {
-		return y
-	}
-	return x
-}
-
-func slugify(s string) string {
-	slug := strings.ReplaceAll(s, " ", "-")
-	slugLength := Min(60, len(slug))
-	return strings.ToLower(slug[0:slugLength])
 }
 
 func (a *App) recipeHandler(w http.ResponseWriter, req *http.Request) {
@@ -82,7 +68,7 @@ func (a *App) addRecipeHandler(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte("Error decoding json body"))
 	}
 
-	_, err = a.db.Query(fmt.Sprintf("INSERT INTO recipe (name, slug) VALUES ('%s', '%s')", recipe.Name, slugify(recipe.Name)))
+	_, err = a.db.Query(fmt.Sprintf("INSERT INTO recipe (name, slug) VALUES ('%s', '%s')", recipe.Name, common.Slugify(recipe.Name)))
 
 	if err != nil {
 		fmt.Println("could not insert recipe")
