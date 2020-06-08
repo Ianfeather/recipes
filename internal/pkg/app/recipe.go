@@ -6,64 +6,35 @@ import (
 	"fmt"
 	"net/http"
 	"recipes/internal/pkg/common"
+	"recipes/internal/pkg/service"
 
 	"github.com/gorilla/mux"
 )
 
-// Ingredient contains ingredient fields
-type Ingredient struct {
-	Name     string `json:"name"`
-	Unit     string `json:"unit"`
-	Quantity string `json:"quantity"`
-}
-
-// Recipe contains recipe fields
-type Recipe struct {
-	Name        string       `json:"name"`
-	ID          int          `json:"id"`
-	Ingredients []Ingredient `json:"ingredients"`
-}
-
 func (a *App) recipeHandler(w http.ResponseWriter, req *http.Request) {
 	slug := mux.Vars(req)["slug"]
 
-	// TODO: turn it into a single query
-	recipe := Recipe{Ingredients: []Ingredient{}}
-	recipeQuery := "SELECT id, name FROM recipe where slug='%s'"
+	recipe, err := service.GetRecipe(slug, a.db)
 
-	err := a.db.QueryRow(fmt.Sprintf(recipeQuery, slug)).Scan(&recipe.ID, &recipe.Name)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			http.Error(w, "Recipe not found", 404)
+			http.Error(w, "Recipe not found", http.StatusNotFound)
 			return
 		}
-		fmt.Sprintln("Failed to parse recipe from db")
-		http.Error(w, err.Error(), 500)
+		http.Error(w, "Failed to parse recipe from db", http.StatusInternalServerError)
 		return
-	}
-
-	ingredientQuery := "SELECT ingredient.name as name, unit.name as unit, quantity FROM part INNER JOIN ingredient on ingredient_id = ingredient.id INNER JOIN unit on unit_id = unit.id WHERE recipe_id = %d;"
-	results, err := a.db.Query(fmt.Sprintf(ingredientQuery, recipe.ID))
-
-	for results.Next() {
-		ingredient := Ingredient{}
-		err = results.Scan(&ingredient.Name, &ingredient.Unit, &ingredient.Quantity)
-		if err != nil {
-			fmt.Sprintln("Failed to parse ingredient from db")
-		}
-		recipe.Ingredients = append(recipe.Ingredients, ingredient)
 	}
 
 	encoder := json.NewEncoder(w)
 	err = encoder.Encode(recipe)
-
 	if err != nil {
-		w.Write([]byte("Error encoding json"))
+		http.Error(w, "Error encoding json", http.StatusInternalServerError)
+		return
 	}
 }
 
 func (a *App) addRecipeHandler(w http.ResponseWriter, req *http.Request) {
-	recipe := Recipe{}
+	recipe := common.Recipe{}
 	err := json.NewDecoder(req.Body).Decode(&recipe)
 
 	if err != nil {
