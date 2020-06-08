@@ -39,6 +39,7 @@ func (a *App) GetRouter() (http.Handler, error) {
 	router.HandleFunc("/health", healthHandler).Methods("GET")
 	router.HandleFunc("/recipe/{slug}", a.recipeHandler).Methods("GET")
 	router.HandleFunc("/recipe", a.addRecipeHandler).Methods("POST")
+	router.HandleFunc("/shopping-list", a.getListHandler).Methods("GET")
 	router.Use(loggingMiddleware)
 	return router, nil
 }

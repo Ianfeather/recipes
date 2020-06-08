@@ -1,32 +1,42 @@
 package app
 
 import (
+	"encoding/json"
 	"net/http"
 	"recipes/internal/pkg/common"
 	"recipes/internal/pkg/service"
+	"strconv"
 	"strings"
-
-	"github.com/gorilla/mux"
 )
 
 // RecipeList is a list of recipes
 type RecipeList struct {
-	recipes []common.Recipe
+	Recipes []common.Recipe `json:"recipes"`
 }
 
-// GetListHandler returns a shopping list
-func (a *App) GetListHandler(w http.ResponseWriter, req *http.Request) {
-	recipes := mux.Vars(req)["recipes"]
-	recipeIDs := strings.Split(recipes, ",")
+func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
+	qs := req.URL.Query()
+	recipeIDs := strings.Split(qs.Get("recipes"), ",")
 
 	recipeList := &RecipeList{}
 
 	for i := 0; i < len(recipeIDs); i++ {
-		recipe, err := service.GetRecipeByID(recipeIDs[i], a.db)
+		id, err := strconv.Atoi(recipeIDs[i])
+		if err == nil {
+			// do something
+		}
+		recipe, err := service.GetRecipeByID(id, a.db)
 		if err != nil {
 			// do something
 		}
-		recipeList.recipes = append(recipeList.recipes, *recipe)
+		recipeList.Recipes = append(recipeList.Recipes, *recipe)
+	}
+
+	encoder := json.NewEncoder(w)
+	err := encoder.Encode(recipeList)
+	if err != nil {
+		http.Error(w, "Error encoding json", http.StatusInternalServerError)
+		return
 	}
 
 }

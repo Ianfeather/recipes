@@ -46,15 +46,24 @@ func GetRecipeBySlug(slug string, db *sql.DB) (r *common.Recipe, e error) {
 }
 
 // GetRecipeByID fetches a recipe from the database by ID
-func GetRecipeByID(id string, db *sql.DB) (r *common.Recipe, e error) {
+func GetRecipeByID(id int, db *sql.DB) (r *common.Recipe, e error) {
 	recipe := &common.Recipe{Ingredients: []common.Ingredient{}}
-	ingredients, err := getIngredientsByRecipeID(recipe.ID, db)
+	recipeQuery := "SELECT id, name FROM recipe where id='%d'"
+
+	err := db.QueryRow(fmt.Sprintf(recipeQuery, id)).Scan(&recipe.ID, &recipe.Name)
 
 	if err != nil {
 		return nil, err
 	}
 
-	recipe.Ingredients = ingredients
+	ingredients, err := getIngredientsByRecipeID(id, db)
+	// todo: get recipe name
 
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	recipe.Ingredients = ingredients
 	return recipe, nil
 }
