@@ -14,7 +14,7 @@ import (
 func (a *App) recipeHandler(w http.ResponseWriter, req *http.Request) {
 	slug := mux.Vars(req)["slug"]
 
-	recipe, err := service.GetRecipe(slug, a.db)
+	recipe, err := service.GetRecipeBySlug(slug, a.db)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
