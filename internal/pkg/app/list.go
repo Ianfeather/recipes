@@ -27,7 +27,6 @@ func combineIngredients(r []common.Recipe) map[string]*Ingredient {
 	for _, recipe := range r {
 		for _, ingredient := range recipe.Ingredients {
 			existingIngredient, exists := ingredientList[ingredient.Name]
-
 			if q, err := strconv.ParseFloat(ingredient.Quantity, 64); err == nil {
 				if exists {
 					existingIngredient.Quantity = existingIngredient.Quantity + q

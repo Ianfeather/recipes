@@ -1,3 +1,3 @@
-- Dev experience
-- DB Backups
+- Dev experience - live reload
+- Regular DB Backups
 - Containerise? Manage orchestration somehow.
