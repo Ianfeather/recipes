@@ -1,3 +1,4 @@
+- Create a plan for how to store ingredient/unit
 - Dev experience - live reload
 - Regular DB Backups
 - Containerise? Manage orchestration somehow.

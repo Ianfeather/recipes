@@ -21,7 +21,8 @@ type Ingredient struct {
 	Quantity float64 `json:"quantity"`
 }
 
-func combineIngredients(r []common.Recipe) map[string]*Ingredient {
+// CombineIngredients creates combined values/units
+func CombineIngredients(r []common.Recipe) map[string]*Ingredient {
 	ingredientList := make(map[string]*Ingredient)
 
 	for _, recipe := range r {
@@ -61,7 +62,7 @@ func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 		response.Recipes = append(response.Recipes, *recipe)
 	}
 
-	response.List = combineIngredients(response.Recipes)
+	response.List = CombineIngredients(response.Recipes)
 
 	encoder := json.NewEncoder(w)
 	err := encoder.Encode(response)
