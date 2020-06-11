@@ -1,3 +1,8 @@
+- Build a frontend
+-- Add recipe
+-- Build shopping list
+-- Make the shopping list tickable
+
 - Dev experience - live reload
 - Regular DB Backups
 - Containerise? Manage orchestration with db somehow.
