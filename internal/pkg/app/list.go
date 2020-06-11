@@ -23,9 +23,14 @@ type Ingredient struct {
 
 // CombineIngredients creates combined values/units
 func CombineIngredients(r []common.Recipe) map[string]*Ingredient {
-	metricIngredients := map[string]string{
+	parentMeasurement := map[string]string{
 		"gram":       "kilogram",
 		"millilitre": "litre",
+	}
+
+	childMeasurement := map[string]string{
+		"kilogram": "gram",
+		"litre":    "millilitre",
 	}
 
 	ingredientList := make(map[string]*Ingredient)
@@ -34,6 +39,11 @@ func CombineIngredients(r []common.Recipe) map[string]*Ingredient {
 		for _, ingredient := range recipe.Ingredients {
 			existingIngredient, exists := ingredientList[ingredient.Name]
 			if q, err := strconv.ParseFloat(ingredient.Quantity, 64); err == nil {
+				// convert to childMeasurement if needed
+				if newUnit, isParentMeasurement := childMeasurement[ingredient.Unit]; isParentMeasurement {
+					q = q * 1000
+					ingredient.Unit = newUnit
+				}
 				if exists {
 					existingIngredient.Quantity = existingIngredient.Quantity + q
 				} else {
@@ -51,7 +61,7 @@ func CombineIngredients(r []common.Recipe) map[string]*Ingredient {
 		if value.Quantity < 1000 {
 			continue
 		}
-		if newUnit, exists := metricIngredients[value.Unit]; exists == true {
+		if newUnit, exists := parentMeasurement[value.Unit]; exists {
 			ingredientList[key].Unit = newUnit
 			ingredientList[key].Quantity = ingredientList[key].Quantity / 1000
 		}

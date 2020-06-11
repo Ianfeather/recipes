@@ -64,7 +64,7 @@ func TestCombineIngredients(t *testing.T) {
 			},
 		},
 		{
-			name: "addition over threshold",
+			name: "addition over threshold - liquid",
 			a: []common.Ingredient{
 				common.Ingredient{
 					Name:     "milk",
@@ -80,6 +80,73 @@ func TestCombineIngredients(t *testing.T) {
 			expect: Ingredient{
 				Unit:     "litre",
 				Quantity: 1.1,
+			},
+		},
+		{
+			name: "addition of different units",
+			a: []common.Ingredient{
+				common.Ingredient{
+					Name:     "mince",
+					Quantity: "500",
+					Unit:     "gram",
+				},
+				common.Ingredient{
+					Name:     "mince",
+					Quantity: "1",
+					Unit:     "kilogram",
+				},
+				common.Ingredient{
+					Name:     "mince",
+					Quantity: "200",
+					Unit:     "gram",
+				},
+			},
+			expect: Ingredient{
+				Unit:     "kilogram",
+				Quantity: 1.7,
+			},
+		},
+		{
+			name: "addition of different units - liquid",
+			a: []common.Ingredient{
+				common.Ingredient{
+					Name:     "milk",
+					Quantity: "500",
+					Unit:     "millilitre",
+				},
+				common.Ingredient{
+					Name:     "milk",
+					Quantity: "1",
+					Unit:     "litre",
+				},
+				common.Ingredient{
+					Name:     "milk",
+					Quantity: "200",
+					Unit:     "millilitre",
+				},
+			},
+			expect: Ingredient{
+				Unit:     "litre",
+				Quantity: 1.7,
+			},
+		},
+		{
+			name: "addition of big units",
+			a: []common.Ingredient{
+				common.Ingredient{
+					Name:     "milk",
+					Quantity: "5",
+					Unit:     "litre",
+				},
+				common.Ingredient{
+					Name:     "milk",
+					Quantity: "1",
+					Unit:     "litre",
+				},
+			},
+			expect: Ingredient{
+				Unit:     "litre",
+				Quantity: 6,
 			},
 		},
 	}
