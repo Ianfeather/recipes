@@ -23,6 +23,11 @@ type Ingredient struct {
 
 // CombineIngredients creates combined values/units
 func CombineIngredients(r []common.Recipe) map[string]*Ingredient {
+	metricIngredients := map[string]string{
+		"gram":       "kilogram",
+		"millilitre": "litre",
+	}
+
 	ingredientList := make(map[string]*Ingredient)
 
 	for _, recipe := range r {
@@ -41,6 +46,17 @@ func CombineIngredients(r []common.Recipe) map[string]*Ingredient {
 			}
 		}
 	}
+
+	for key, value := range ingredientList {
+		if value.Quantity < 1000 {
+			continue
+		}
+		if newUnit, exists := metricIngredients[value.Unit]; exists == true {
+			ingredientList[key].Unit = newUnit
+			ingredientList[key].Quantity = ingredientList[key].Quantity / 1000
+		}
+	}
+
 	return ingredientList
 }
 

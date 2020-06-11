@@ -17,11 +17,11 @@ func TestCombineIngredients(t *testing.T) {
 				common.Ingredient{
 					Name:     "mince",
 					Quantity: "1",
-					Unit:     "g",
+					Unit:     "gram",
 				},
 			},
 			expect: Ingredient{
-				Unit:     "g",
+				Unit:     "gram",
 				Quantity: 1,
 			},
 		},
@@ -31,17 +31,55 @@ func TestCombineIngredients(t *testing.T) {
 				common.Ingredient{
 					Name:     "mince",
 					Quantity: "1",
-					Unit:     "g",
+					Unit:     "gram",
 				},
 				common.Ingredient{
 					Name:     "mince",
 					Quantity: "2",
-					Unit:     "g",
+					Unit:     "gram",
 				},
 			},
 			expect: Ingredient{
-				Unit:     "g",
+				Unit:     "gram",
 				Quantity: 3,
+			},
+		},
+		{
+			name: "addition over threshold",
+			a: []common.Ingredient{
+				common.Ingredient{
+					Name:     "mince",
+					Quantity: "500",
+					Unit:     "gram",
+				},
+				common.Ingredient{
+					Name:     "mince",
+					Quantity: "600",
+					Unit:     "gram",
+				},
+			},
+			expect: Ingredient{
+				Unit:     "kilogram",
+				Quantity: 1.1,
+			},
+		},
+		{
+			name: "addition over threshold",
+			a: []common.Ingredient{
+				common.Ingredient{
+					Name:     "milk",
+					Quantity: "500",
+					Unit:     "millilitre",
+				},
+				common.Ingredient{
+					Name:     "milk",
+					Quantity: "600",
+					Unit:     "millilitre",
+				},
+			},
+			expect: Ingredient{
+				Unit:     "litre",
+				Quantity: 1.1,
 			},
 		},
 	}
@@ -52,8 +90,8 @@ func TestCombineIngredients(t *testing.T) {
 				Ingredients: tc.a,
 			}}
 			result := CombineIngredients(recipes)
-			if *result["mince"] != tc.expect {
-				t.Errorf("expected %v but got %v", tc.expect, *result["mince"])
+			if *result[tc.a[0].Name] != tc.expect {
+				t.Errorf("expected %v but got %v", tc.expect, *result[tc.a[0].Name])
 			}
 		})
 	}
