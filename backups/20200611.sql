@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.19, for osx10.13 (x86_64)
 --
--- Host: localhost    Database: shoppinglist
+-- Host: localhost    Database: bigshop
 -- ------------------------------------------------------
 -- Server version	8.0.19
 
@@ -16,12 +16,12 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Current Database: `shoppinglist`
+-- Current Database: `bigshop`
 --
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `shoppinglist` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `bigshop` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 
-USE `shoppinglist`;
+USE `bigshop`;
 
 --
 -- Table structure for table `ingredient`
@@ -36,7 +36,7 @@ CREATE TABLE `ingredient` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -71,7 +71,7 @@ CREATE TABLE `part` (
   CONSTRAINT `fk_part_ingredient_id` FOREIGN KEY (`ingredient_id`) REFERENCES `ingredient` (`id`),
   CONSTRAINT `fk_part_recipe_id` FOREIGN KEY (`recipe_id`) REFERENCES `recipe` (`id`),
   CONSTRAINT `fk_part_unit_id` FOREIGN KEY (`unit_id`) REFERENCES `unit` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -80,7 +80,7 @@ CREATE TABLE `part` (
 
 LOCK TABLES `part` WRITE;
 /*!40000 ALTER TABLE `part` DISABLE KEYS */;
-INSERT INTO `part` VALUES (1,3,1,3,'1','2020-06-08 20:02:16','2020-06-08 20:32:22'),(2,3,2,2,'800','2020-06-08 20:03:11','2020-06-08 20:29:56'),(3,2,3,1,'1','2020-06-08 20:03:23','2020-06-08 20:03:23'),(4,3,4,1,'1','2020-06-08 20:35:19','2020-06-08 20:35:19'),(5,3,5,1,'1','2020-06-08 20:35:30','2020-06-08 20:35:30'),(7,3,6,4,'2','2020-06-08 20:37:05','2020-06-08 20:37:05'),(8,3,7,5,'2','2020-06-08 20:37:20','2020-06-08 20:37:20'),(9,3,8,5,'1','2020-06-08 20:37:30','2020-06-08 20:37:30'),(10,3,9,1,'1','2020-06-08 20:37:45','2020-06-08 20:37:45'),(11,3,10,1,'1','2020-06-08 20:37:51','2020-06-08 20:37:51'),(12,3,11,6,'300','2020-06-08 20:38:06','2020-06-08 20:38:06'),(13,4,12,2,'200','2020-06-08 23:01:56','2020-06-08 23:01:56'),(14,4,2,2,'500','2020-06-08 23:02:14','2020-06-08 23:02:14'),(15,4,13,1,'1','2020-06-08 23:02:33','2020-06-08 23:02:33'),(16,4,4,1,'1','2020-06-08 23:02:44','2020-06-08 23:02:44'),(17,4,6,4,'3','2020-06-08 23:02:59','2020-06-08 23:02:59'),(18,4,8,5,'2','2020-06-08 23:03:18','2020-06-08 23:03:18'),(19,4,15,6,'200','2020-06-08 23:03:32','2020-06-08 23:03:32'),(20,4,17,2,'150','2020-06-08 23:03:54','2020-06-08 23:03:54');
+INSERT INTO `part` VALUES (1,1,1,3,'1','2020-06-08 20:02:16','2020-06-08 20:32:22'),(2,1,2,2,'800','2020-06-08 20:03:11','2020-06-08 20:29:56'),(4,1,4,1,'1','2020-06-08 20:35:19','2020-06-08 20:35:19'),(5,1,5,1,'1','2020-06-08 20:35:30','2020-06-08 20:35:30'),(7,1,6,4,'2','2020-06-08 20:37:05','2020-06-08 20:37:05'),(8,1,7,5,'2','2020-06-08 20:37:20','2020-06-08 20:37:20'),(9,1,8,5,'1','2020-06-08 20:37:30','2020-06-08 20:37:30'),(10,1,9,1,'1','2020-06-08 20:37:45','2020-06-08 20:37:45'),(11,1,10,1,'1','2020-06-08 20:37:51','2020-06-08 20:37:51'),(12,1,11,6,'300','2020-06-08 20:38:06','2020-06-08 20:38:06'),(13,2,12,2,'200','2020-06-08 23:01:56','2020-06-08 23:01:56'),(14,2,2,2,'500','2020-06-08 23:02:14','2020-06-08 23:02:14'),(15,2,13,1,'1','2020-06-08 23:02:33','2020-06-08 23:02:33'),(16,2,4,1,'1','2020-06-08 23:02:44','2020-06-08 23:02:44'),(17,2,6,4,'3','2020-06-08 23:02:59','2020-06-08 23:02:59'),(18,2,8,5,'2','2020-06-08 23:03:18','2020-06-08 23:03:18'),(19,2,15,6,'200','2020-06-08 23:03:32','2020-06-08 23:03:32'),(20,2,17,2,'150','2020-06-08 23:03:54','2020-06-08 23:03:54');
 /*!40000 ALTER TABLE `part` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -97,9 +97,10 @@ CREATE TABLE `recipe` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `slug` varchar(60) NOT NULL,
+  `remote_url` varchar(255),
   PRIMARY KEY (`id`),
   KEY `idx_recipe_slug` (`slug`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -108,7 +109,7 @@ CREATE TABLE `recipe` (
 
 LOCK TABLES `recipe` WRITE;
 /*!40000 ALTER TABLE `recipe` DISABLE KEYS */;
-INSERT INTO `recipe` VALUES (1,'Roast Pork','2020-06-07 14:29:57','2020-06-07 14:50:32','roast-pork'),(2,'Lemon Meringue Pie','2020-06-07 14:52:19','2020-06-07 14:54:09','lemon-meringue-pie'),(3,'Shepherds Pie','2020-06-07 14:53:40','2020-06-07 14:53:40','shepherds-pie'),(4,'Spaghetti Bolognese','2020-06-08 22:59:32','2020-06-08 22:59:32','spaghetti-bolognese');
+INSERT INTO `recipe` VALUES (1,'Shepherds Pie','2020-06-07 14:53:40','2020-06-07 14:53:40','shepherds-pie', ''),(2,'Spaghetti Bolognese','2020-06-08 22:59:32','2020-06-08 22:59:32','spaghetti-bolognese', '');
 /*!40000 ALTER TABLE `recipe` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -125,7 +126,7 @@ CREATE TABLE `unit` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

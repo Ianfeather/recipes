@@ -34,12 +34,14 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 // GetRouter returns the application router
-func (a *App) GetRouter() (http.Handler, error) {
+func (a *App) GetRouter(base string) (*mux.Router, error) {
 	router := mux.NewRouter()
-	router.HandleFunc("/health", healthHandler).Methods("GET")
-	router.HandleFunc("/recipe/{slug}", a.recipeHandler).Methods("GET")
-	router.HandleFunc("/recipe", a.addRecipeHandler).Methods("POST")
-	router.HandleFunc("/shopping-list", a.getListHandler).Methods("GET")
+	router.HandleFunc(base+"/health", healthHandler).Methods("GET")
+	router.HandleFunc(base+"/recipes", a.recipesHandler).Methods("GET")
+	router.HandleFunc(base+"/recipe/{slug}", a.recipeHandler).Methods("GET")
+	router.HandleFunc(base+"/recipe", a.addRecipeHandler).Methods("POST")
+	router.HandleFunc(base+"/shopping-list", a.getListHandler).Methods("GET")
+	router.HandleFunc(base+"/units", a.getUnitsHandler).Methods("GET")
 	router.Use(loggingMiddleware)
 	return router, nil
 }

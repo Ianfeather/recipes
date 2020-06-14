@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 	"recipes/internal/pkg/app"
 	"recipes/internal/pkg/common"
 	"time"
@@ -12,7 +13,9 @@ import (
 )
 
 func main() {
-	db, err := sql.Open("mysql", "recipe_app@tcp(127.0.0.1:3306)/shoppinglist")
+	pass := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	db, err := sql.Open("mysql", fmt.Sprintf("%s@tcp(%s:3306)/shoppinglist", pass, dbHost))
 
 	if err != nil {
 		fmt.Println("Failed to connect to database")
@@ -28,7 +31,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	router, err := application.GetRouter()
+	router, err := application.GetRouter("")
 	if err != nil {
 		fmt.Println("Failed to get application router")
 		fmt.Println(err)

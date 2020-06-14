@@ -1,7 +1,10 @@
+create database `bigshop`;
+
 create table `recipe` (
   `id` int NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `name` varchar(255) NOT NULL,
   `slug` varchar(60) NOT NULL,
+  `remote_url` varchar(255),
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)

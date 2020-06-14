@@ -1,9 +1,10 @@
 package service
 
 import (
+	"recipes/internal/pkg/common"
+
 	"database/sql"
 	"fmt"
-	"recipes/internal/pkg/common"
 )
 
 func getIngredientsByRecipeID(id int, db *sql.DB) ([]common.Ingredient, error) {
