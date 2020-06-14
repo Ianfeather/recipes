@@ -68,3 +68,35 @@ func GetRecipeByID(id int, db *sql.DB) (r *common.Recipe, e error) {
 	recipe.Ingredients = ingredients
 	return recipe, nil
 }
+
+// AddRecipe inserts recipe, ingredients into the DB
+func AddRecipe(recipe common.Recipe, db *sql.DB) error {
+
+	_, err := db.Query(fmt.Sprintf("INSERT INTO recipe (name, slug, remote_url) VALUES ('%s', '%s', '%s')", recipe.Name, common.Slugify(recipe.Name), recipe.RemoteURL))
+
+	if err != nil {
+		fmt.Println("could not insert recipe")
+		fmt.Println(err.Error())
+		return err
+	}
+
+	fmt.Println(recipe.Ingredients)
+
+	ingredientQuery := "INSERT INTO ingredient (name) values "
+	for idx, ingredient := range recipe.Ingredients {
+		ingredientQuery += fmt.Sprintf("('%s')", ingredient.Name)
+		if idx != len(recipe.Ingredients)-1 {
+			ingredientQuery += ","
+		}
+	}
+	ingredientQuery += " ON DUPLICATE KEY UPDATE id=id;"
+	fmt.Println(ingredientQuery)
+	_, err = db.Query(ingredientQuery)
+
+	if err != nil {
+		fmt.Println("could not insert ingredients")
+		fmt.Println(err.Error())
+		return err
+	}
+	return nil
+}
