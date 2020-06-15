@@ -7,14 +7,42 @@ import (
 	"net/http"
 	"recipes/internal/pkg/common"
 	"recipes/internal/pkg/service"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
-func (a *App) recipeHandler(w http.ResponseWriter, req *http.Request) {
+func (a *App) recipeHandlerBySlug(w http.ResponseWriter, req *http.Request) {
 	slug := mux.Vars(req)["slug"]
 
 	recipe, err := service.GetRecipeBySlug(slug, a.db)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Recipe not found", http.StatusNotFound)
+			return
+		}
+		fmt.Println(err)
+		http.Error(w, "Failed to parse recipe from db", http.StatusInternalServerError)
+		return
+	}
+
+	encoder := json.NewEncoder(w)
+	err = encoder.Encode(recipe)
+	if err != nil {
+		http.Error(w, "Error encoding json", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (a *App) recipeHandlerByID(w http.ResponseWriter, req *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(req)["id"])
+
+	if err == nil {
+		fmt.Println(err)
+	}
+
+	recipe, err := service.GetRecipeByID(id, a.db)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
