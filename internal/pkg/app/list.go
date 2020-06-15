@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"recipes/internal/pkg/common"
 	"recipes/internal/pkg/service"
@@ -74,12 +75,12 @@ func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 
 	for i := 0; i < len(recipeIDs); i++ {
 		id, err := strconv.Atoi(recipeIDs[i])
-		if err == nil {
-			// do something
+		if err != nil {
+			fmt.Println(err)
 		}
 		recipe, err := service.GetRecipeByID(id, a.db)
 		if err != nil {
-			// do something
+			fmt.Println(err)
 		}
 		response.Recipes = append(response.Recipes, *recipe)
 	}
