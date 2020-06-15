@@ -1,8 +1,10 @@
 - Build a frontend
--- Add recipe
--- Build shopping list
 -- Make the shopping list tickable
 
 - Dev experience - live reload
 - Regular DB Backups
 - Containerise? Manage orchestration with db somehow.
+
+- Make the RDS instance non-public
+- being able to just paste in 7 recipe urls would be cool
+- should move the go api to an ec2 server or non-netlify serverless fn
