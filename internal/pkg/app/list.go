@@ -76,14 +76,11 @@ func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 	for i := 0; i < len(recipeIDs); i++ {
 		id, err := strconv.Atoi(recipeIDs[i])
 		if err == nil {
-			// do something
+			fmt.Println(err)
 		}
 		recipe, err := service.GetRecipeByID(id, a.db)
 		if err != nil {
-			fmt.Println("ERROR")
 			fmt.Println(err)
-
-			// do something
 		}
 		response.Recipes = append(response.Recipes, *recipe)
 	}
