@@ -7,19 +7,20 @@ import (
 	"recipes/internal/pkg/common"
 	"recipes/internal/pkg/service"
 	"strconv"
-	"strings"
 )
 
 // ResponseObject is the json response
 type ResponseObject struct {
-	Recipes []common.Recipe        `json:"recipes"`
-	List    map[string]*Ingredient `json:"list"`
+	Recipes 		[]common.Recipe        `json:"recipes"`
+	Ingredients map[string]*Ingredient `json:"ingredients"`
+	Extras    	map[string]*Ingredient `json:"extras"`
 }
 
 // Ingredient is a subset of shopping List
 type Ingredient struct {
-	Unit     string  `json:"unit"`
-	Quantity float64 `json:"quantity"`
+	Unit      string  `json:"unit"`
+	Quantity  float64 `json:"quantity"`
+	IsChecked bool    `json:"isChecked"`
 }
 
 // CombineIngredients creates combined values/units
@@ -47,6 +48,7 @@ func CombineIngredients(r []common.Recipe) map[string]*Ingredient {
 					newIngredient := Ingredient{
 						Unit:     ingredient.Unit,
 						Quantity: q,
+						IsChecked: false
 					}
 					ingredientList[ingredient.Name] = &newIngredient
 				}
@@ -67,9 +69,16 @@ func CombineIngredients(r []common.Recipe) map[string]*Ingredient {
 	return ingredientList
 }
 
-func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
-	qs := req.URL.Query()
-	recipeIDs := strings.Split(qs.Get("recipes"), ",")
+func (a *App) postListHandler(w http.ResponseWriter, req *http.Request) {
+	// TODO: Identity
+	userID := 1
+
+	recipeIDs := make([]string, 0)
+	err := json.NewDecoder(req.Body).Decode(&recipeIDs)
+
+	if err != nil {
+		w.Write([]byte("Error decoding json body"))
+	}
 
 	response := &ResponseObject{}
 
@@ -85,7 +94,16 @@ func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 		response.Recipes = append(response.Recipes, *recipe)
 	}
 
-	response.List = CombineIngredients(response.Recipes)
+	combinedIngredients := CombineIngredients(response.Recipes)
+
+	service.removeIngredientListItems(userID, a.db)
+
+	// Replace all the items
+	service.addIngredientListItems(userID, combinedIngredients, a.db)
+
+	// Return the new items + extras
+	response.Ingredients = combinedIngredients
+	response.Extras = service.getExtraListItems(userID, a.db)
 
 	encoder := json.NewEncoder(w)
 	err := encoder.Encode(response)
