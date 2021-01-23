@@ -1,21 +1,27 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
-	"net/http"
 	"os"
+
 	"recipes/internal/pkg/app"
 	"recipes/internal/pkg/common"
-	"time"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func main() {
+var muxLambda *gorillamux.GorillaMuxAdapter
+
+func init() {
 	pass := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")
-	db, err := sql.Open("mysql", fmt.Sprintf("%s@tcp(%s:3306)/shoppinglist", pass, dbHost))
+	db, err := sql.Open("mysql", fmt.Sprintf("admin:%s@tcp(%s:3306)/bigshop", pass, dbHost))
 
 	if err != nil {
 		fmt.Println("Failed to connect to database")
@@ -31,19 +37,19 @@ func main() {
 		fmt.Println(err)
 	}
 
-	router, err := application.GetRouter("")
+	r, err := application.GetRouter("/.netlify/functions/big-shop")
 	if err != nil {
 		fmt.Println("Failed to get application router")
 		fmt.Println(err)
 	}
 
-	server := http.Server{
-		Addr:         ":8080",
-		ReadTimeout:  3000 * time.Millisecond,
-		WriteTimeout: 3000 * time.Millisecond,
-		Handler:      router,
-	}
+	muxLambda = gorillamux.New(r)
+}
 
-	server.ListenAndServe()
-	defer db.Close()
+func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return muxLambda.ProxyWithContext(ctx, req)
+}
+
+func main() {
+	lambda.Start(handler)
 }
