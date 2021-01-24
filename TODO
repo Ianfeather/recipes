@@ -6,3 +6,8 @@
 - Make the RDS instance non-public
 - being able to just paste in 7 recipe urls would be cool
 - should move the go api to an ec2 server or non-netlify serverless fn
+
+
+# infra
+
+I've set up a lambda and a gateway but not having any luck with requests yet
