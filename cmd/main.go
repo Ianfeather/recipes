@@ -37,7 +37,7 @@ func init() {
 		fmt.Println(err)
 	}
 
-	r, err := application.GetRouter("/.netlify/functions/big-shop")
+	r, err := application.GetRouter("")
 	if err != nil {
 		fmt.Println("Failed to get application router")
 		fmt.Println(err)
@@ -47,9 +47,12 @@ func init() {
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	fmt.Println("in handler")
+	fmt.Println(req.Path)
 	return muxLambda.ProxyWithContext(ctx, req)
 }
 
 func main() {
+	fmt.Println("starting main()")
 	lambda.Start(handler)
 }
