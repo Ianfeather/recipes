@@ -10,9 +10,16 @@
 
 # infra
 
-Ok it's setup with a proxy service so is now reachable on a serverless function. All being configured manually so far through the console :(
+Ok it's setup with a proxy service so is now reachable on a serverless function.
 
-It still can't connect to a DB - but i haven't given it perms to be fair. Next steps:
--- secrets
--- role to connect to DB
--- cloudformation to manage all of this
+Things I've done manually
+-- secrets (for db connection - added them directly in the lambda console)
+-- connect to DB - it's behind a vpc but console configured
+-- api gateway + routes setup
+-- cors setup (still need to do)
+
+# todo
+-- move bigshop to use the new api
+-- need cloudformation to manage all of the resources
+-- need a deployment pipeline
+-- need to be able to query/migrate data on RDS - seems like moving it to aurora is the answer there
