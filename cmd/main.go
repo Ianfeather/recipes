@@ -19,14 +19,19 @@ import (
 var muxLambda *gorillamux.GorillaMuxAdapter
 
 func init() {
+	fmt.Println("init()")
 	pass := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")
+	fmt.Println("init(): 1")
+	fmt.Println(fmt.Sprintf("admin:%s@tcp(%s:3306)/bigshop", pass, dbHost))
 	db, err := sql.Open("mysql", fmt.Sprintf("admin:%s@tcp(%s:3306)/bigshop", pass, dbHost))
+	fmt.Println("init(): 2")
 
 	if err != nil {
 		fmt.Println("Failed to connect to database")
 		panic(err.Error())
 	}
+	fmt.Println(db)
 
 	env := &common.Env{DB: db}
 

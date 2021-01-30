@@ -10,4 +10,9 @@
 
 # infra
 
-I've set up a lambda and a gateway but not having any luck with requests yet
+Ok it's setup with a proxy service so is now reachable on a serverless function. All being configured manually so far through the console :(
+
+It still can't connect to a DB - but i haven't given it perms to be fair. Next steps:
+-- secrets
+-- role to connect to DB
+-- cloudformation to manage all of this
