@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"recipes/internal/pkg/common"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -35,6 +36,11 @@ func loggingMiddleware(next http.Handler) http.Handler {
 
 // GetRouter returns the application router
 func (a *App) GetRouter(base string) (*mux.Router, error) {
+	cors := handlers.CORS(
+		handlers.AllowedHeaders([]string{"content-type"}),
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowCredentials(),
+	)
 	router := mux.NewRouter()
 	router.HandleFunc(base+"/health", healthHandler).Methods("GET")
 	router.HandleFunc(base+"/recipes", a.recipesHandler).Methods("GET")
@@ -50,5 +56,6 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 	router.HandleFunc(base+"/shopping-list/clear", a.clearListHandler).Methods("DELETE")
 	router.HandleFunc(base+"/units", a.getUnitsHandler).Methods("GET")
 	router.Use(loggingMiddleware)
+	router.Use(cors)
 	return router, nil
 }
