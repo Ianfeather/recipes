@@ -16,10 +16,14 @@ Things I've done manually
 -- secrets (for db connection - added them directly in the lambda console)
 -- connect to DB - it's behind a vpc but console configured
 -- api gateway + routes setup
--- cors setup (still need to do)
 
 # todo
--- move bigshop to use the new api
 -- need cloudformation to manage all of the resources
 -- need a deployment pipeline
 -- need to be able to query/migrate data on RDS - seems like moving it to aurora is the answer there
+-- be able to toggle between lambda and regular api locally
+
+# done
+-- cors setup
+-- move bigshop to use the new api
+-- updated character set
