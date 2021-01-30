@@ -14,7 +14,7 @@ func TestCombineIngredients(t *testing.T) {
 		{
 			name: "no addition",
 			a: []common.Ingredient{
-				common.Ingredient{
+				{
 					Name:     "mince",
 					Quantity: "1",
 					Unit:     "gram",
@@ -28,12 +28,12 @@ func TestCombineIngredients(t *testing.T) {
 		{
 			name: "simple addition",
 			a: []common.Ingredient{
-				common.Ingredient{
+				{
 					Name:     "mince",
 					Quantity: "1",
 					Unit:     "gram",
 				},
-				common.Ingredient{
+				{
 					Name:     "mince",
 					Quantity: "2",
 					Unit:     "gram",
@@ -47,12 +47,12 @@ func TestCombineIngredients(t *testing.T) {
 		{
 			name: "addition over threshold",
 			a: []common.Ingredient{
-				common.Ingredient{
+				{
 					Name:     "mince",
 					Quantity: "500",
 					Unit:     "gram",
 				},
-				common.Ingredient{
+				{
 					Name:     "mince",
 					Quantity: "600",
 					Unit:     "gram",
@@ -66,12 +66,12 @@ func TestCombineIngredients(t *testing.T) {
 		{
 			name: "addition over threshold - liquid",
 			a: []common.Ingredient{
-				common.Ingredient{
+				{
 					Name:     "milk",
 					Quantity: "500",
 					Unit:     "millilitre",
 				},
-				common.Ingredient{
+				{
 					Name:     "milk",
 					Quantity: "600",
 					Unit:     "millilitre",
@@ -85,17 +85,17 @@ func TestCombineIngredients(t *testing.T) {
 		{
 			name: "addition of different units",
 			a: []common.Ingredient{
-				common.Ingredient{
+				{
 					Name:     "mince",
 					Quantity: "500",
 					Unit:     "gram",
 				},
-				common.Ingredient{
+				{
 					Name:     "mince",
 					Quantity: "1",
 					Unit:     "kilogram",
 				},
-				common.Ingredient{
+				{
 					Name:     "mince",
 					Quantity: "200",
 					Unit:     "gram",
@@ -109,17 +109,17 @@ func TestCombineIngredients(t *testing.T) {
 		{
 			name: "addition of different units - liquid",
 			a: []common.Ingredient{
-				common.Ingredient{
+				{
 					Name:     "milk",
 					Quantity: "500",
 					Unit:     "millilitre",
 				},
-				common.Ingredient{
+				{
 					Name:     "milk",
 					Quantity: "1",
 					Unit:     "litre",
 				},
-				common.Ingredient{
+				{
 					Name:     "milk",
 					Quantity: "200",
 					Unit:     "millilitre",
@@ -133,12 +133,12 @@ func TestCombineIngredients(t *testing.T) {
 		{
 			name: "addition of big units",
 			a: []common.Ingredient{
-				common.Ingredient{
+				{
 					Name:     "milk",
 					Quantity: "5",
 					Unit:     "litre",
 				},
-				common.Ingredient{
+				{
 					Name:     "milk",
 					Quantity: "1",
 					Unit:     "litre",
@@ -153,7 +153,7 @@ func TestCombineIngredients(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			recipes := []common.Recipe{common.Recipe{
+			recipes := []common.Recipe{{
 				Ingredients: tc.a,
 			}}
 			result := CombineIngredients(recipes)
