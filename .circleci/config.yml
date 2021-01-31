@@ -8,11 +8,11 @@ jobs:
       - checkout
 
       - run:
-        name: Install dependencies
-        command: go mod download
+          name: Install dependencies
+          command: go mod download
       - run:
-        name: Run tests
-        command: go test -v ./...
+          name: Run tests
+          command: go test -v ./...
 
   deploy_prod:
     docker:
@@ -22,11 +22,11 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Install dependencies
-        command: go mod download
+          name: Install dependencies
+          command: go mod download
       - run:
-        name: Build
-        command: ./.circleci/deploy
+          name: Build
+          command: ./.circleci/deploy
 
 workflows:
   version: 2
