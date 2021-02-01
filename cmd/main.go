@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/http"
 	"os"
+	"time"
 
 	"recipes/internal/pkg/app"
 	"recipes/internal/pkg/common"
@@ -12,11 +14,13 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
+	"github.com/gorilla/mux"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 var muxLambda *gorillamux.GorillaMuxAdapter
+var router *mux.Router
 
 func init() {
 	pass := os.Getenv("DB_PASSWORD")
@@ -37,13 +41,13 @@ func init() {
 		fmt.Println(err)
 	}
 
-	r, err := application.GetRouter("")
+	router, err = application.GetRouter("")
 	if err != nil {
 		fmt.Println("Failed to get application router")
 		fmt.Println(err)
 	}
 
-	muxLambda = gorillamux.New(r)
+	muxLambda = gorillamux.New(router)
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -51,5 +55,17 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 }
 
 func main() {
-	lambda.Start(handler)
+	args := os.Args
+
+	if len(args) > 1 && args[1] == "dev" {
+		server := http.Server{
+			Addr:         ":8080",
+			ReadTimeout:  3000 * time.Millisecond,
+			WriteTimeout: 3000 * time.Millisecond,
+			Handler:      router,
+		}
+		server.ListenAndServe()
+	} else {
+		lambda.Start(handler)
+	}
 }

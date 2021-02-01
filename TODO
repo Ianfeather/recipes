@@ -1,14 +1,18 @@
 # todo
-- need a deployment pipeline
-- be able to toggle between lambda and regular api locally
+- a domain
 - need cloudformation to manage all of the resources
 - not sure how to query/migrate data on RDS
 - Dev experience - live reload
 - being able to just paste in 7 recipe urls would be cool
-- set up a stage function/db + toggle netlify branches to serve that
+- set up a stage function/db/ci + toggle netlify branches to serve that
 
 
 ## Done, but configured manually (via console)
 - secrets (for db connection - added them directly in the lambda console)
 - connect to DB - it's behind a vpc but console configured
 - api gateway + routes setup
+
+
+## Done
+- deployment pipeline
+- be able to toggle between lambda and regular api locally

@@ -5,9 +5,16 @@
 In the root of the app:
 - run `./env`
 - visit http://localhost:8080/health
-- visit http://localhost:8080/recipe
+- visit http://localhost:8080/recipes
 
-This won't actually work because it's set up as a lambda right now.
+This uses a regular server locally and a lambda outside of dev.
+
+### local setup
+- db user
+```
+CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
+GRANT ALL PRIVILEGES ON bigshop.* TO 'admin'@'localhost';
+```
 
 ## testing the app
 ```
@@ -16,8 +23,9 @@ go test ./... -v
 ```
 
 ## deploying
-yeah, it sucks for now - v manual
+Master builds are automatically deployed to AWS via circle-ci ([dashboard](https://app.circleci.com/pipelines/github/Ianfeather))
 
+Local builds can be deployed manually with the following:
 ```
 1. ./build.sh
 2. https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions/recipes?newFunction=true&tab=configuration

@@ -2,6 +2,7 @@ package service
 
 import (
 	"database/sql"
+	"fmt"
 )
 
 // Recipe is a lightweight recipe type w/o ingredients
@@ -14,6 +15,11 @@ type Recipe struct {
 func GetAllRecipes(db *sql.DB) ([]Recipe, error) {
 	recipesQuery := "SELECT id, name FROM recipe ORDER BY lower(name);"
 	results, err := db.Query(recipesQuery)
+
+	if err != nil {
+		fmt.Println("Error querying recipes")
+		return nil, err
+	}
 
 	recipes := make([]Recipe, 0)
 
