@@ -139,7 +139,17 @@ func EditRecipe(recipe common.Recipe, db *sql.DB) error {
 
 // DeleteRecipe removes a recipe from the db
 func DeleteRecipe(recipe common.Recipe, db *sql.DB) error {
-	stmt, err := db.Prepare("DELETE FROM recipe WHERE id=?")
+	// Delete the existing relationships between recipe & ingredients
+	stmt, err := db.Prepare("DELETE FROM part WHERE recipe_id=?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(recipe.ID)
+	if err != nil {
+		return err
+	}
+
+	stmt, err = db.Prepare("DELETE FROM recipe WHERE id=?")
 	if err != nil {
 		return err
 	}
@@ -148,15 +158,6 @@ func DeleteRecipe(recipe common.Recipe, db *sql.DB) error {
 		return err
 	}
 
-	// Delete the existing relationships between recipe & ingredients
-	stmt, err = db.Prepare("DELETE FROM part WHERE recipe_id=?")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(recipe.ID)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
