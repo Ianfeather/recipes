@@ -14,9 +14,9 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
-	"github.com/gorilla/mux"
-
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 var muxLambda *gorillamux.GorillaMuxAdapter
@@ -62,7 +62,7 @@ func main() {
 			Addr:         ":8080",
 			ReadTimeout:  3000 * time.Millisecond,
 			WriteTimeout: 3000 * time.Millisecond,
-			Handler:      router,
+			Handler:      cors.Default().Handler(router),
 		}
 		server.ListenAndServe()
 	} else {
