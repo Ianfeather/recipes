@@ -58,11 +58,14 @@ func main() {
 	args := os.Args
 
 	if len(args) > 1 && args[1] == "dev" {
+		c := cors.New(cors.Options{
+			AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+		})
 		server := http.Server{
 			Addr:         ":8080",
 			ReadTimeout:  3000 * time.Millisecond,
 			WriteTimeout: 3000 * time.Millisecond,
-			Handler:      cors.Default().Handler(router),
+			Handler:      c.Handler(router),
 		}
 		server.ListenAndServe()
 	} else {
