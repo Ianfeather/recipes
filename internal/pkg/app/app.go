@@ -49,6 +49,7 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 	router.HandleFunc(base+"/recipe/{id:[0-9]+}", a.recipeHandlerByID).Methods("GET")
 	router.HandleFunc(base+"/recipe", a.addRecipeHandler).Methods("POST")
 	router.HandleFunc(base+"/recipe", a.editRecipeHandler).Methods("PUT")
+	router.HandleFunc(base+"/recipe", a.deleteRecipeHandler).Methods("DELETE")
 	router.HandleFunc(base+"/shopping-list", a.getListHandler).Methods("GET")
 	router.HandleFunc(base+"/shopping-list", a.createListHandler).Methods("POST")
 	router.HandleFunc(base+"/shopping-list/buy", a.buyListItemHandler).Methods("PATCH")

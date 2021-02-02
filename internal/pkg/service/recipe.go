@@ -137,6 +137,29 @@ func EditRecipe(recipe common.Recipe, db *sql.DB) error {
 	return nil
 }
 
+// DeleteRecipe removes a recipe from the db
+func DeleteRecipe(recipe common.Recipe, db *sql.DB) error {
+	stmt, err := db.Prepare("DELETE FROM recipe WHERE id=?")
+	if err != nil {
+		return err
+	}
+
+	if _, err = stmt.Exec(recipe.ID); err != nil {
+		return err
+	}
+
+	// Delete the existing relationships between recipe & ingredients
+	stmt, err = db.Prepare("DELETE FROM part WHERE recipe_id=?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(recipe.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func insertIngredients(recipe common.Recipe, db *sql.DB) error {
 	ingredientQuery := "INSERT INTO ingredient (name) values "
 	for idx, ingredient := range recipe.Ingredients {
