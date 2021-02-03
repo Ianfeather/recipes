@@ -8,17 +8,39 @@ import (
 )
 
 func getIngredientsByRecipeID(id int, db *sql.DB) ([]common.Ingredient, error) {
-	ingredientQuery := "SELECT ingredient.name as name, unit.name as unit, quantity FROM part INNER JOIN ingredient on ingredient_id = ingredient.id INNER JOIN unit on unit_id = unit.id WHERE recipe_id = ?;"
+	ingredientQuery := `
+		SELECT
+			ingredient.name as name,
+			unit.name as unit,
+			quantity,
+			department.name as department
+		FROM
+			part
+			INNER JOIN ingredient on ingredient_id = ingredient.id
+			INNER JOIN unit on unit_id = unit.id
+			LEFT JOIN department on department.id = (select department_id from ingredient_department where ingredient_department.ingredient_id = ingredient.id)
+		WHERE
+		recipe_id = ?;
+	`
 	results, err := db.Query(ingredientQuery, id)
 
 	ingredients := make([]common.Ingredient, 0)
 
 	for results.Next() {
+		var department sql.NullString
 		ingredient := common.Ingredient{}
-		err = results.Scan(&ingredient.Name, &ingredient.Unit, &ingredient.Quantity)
+		err = results.Scan(&ingredient.Name, &ingredient.Unit, &ingredient.Quantity, &department)
+
 		if err != nil {
 			return nil, err
 		}
+
+		if department.Valid {
+			ingredient.Department = department.String
+		} else {
+			ingredient.Department = ""
+		}
+
 		ingredients = append(ingredients, ingredient)
 	}
 	return ingredients, nil

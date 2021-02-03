@@ -14,9 +14,10 @@ type SimpleResponse struct {
 
 // Ingredient contains ingredient fields
 type Ingredient struct {
-	Name     string `json:"name"`
-	Unit     string `json:"unit"`
-	Quantity string `json:"quantity"`
+	Name       string `json:"name"`
+	Unit       string `json:"unit"`
+	Quantity   string `json:"quantity"`
+	Department string `json:"department"`
 }
 
 // Recipe contains recipe fields
@@ -29,8 +30,9 @@ type Recipe struct {
 
 // ListIngredient is a subset of shopping List
 type ListIngredient struct {
-	Unit     string  `json:"unit"`
-	Quantity float64 `json:"quantity"`
-	IsBought bool    `json:"isBought"`
-	RecipeID int     `json:"recipe_id"`
+	Unit       string  `json:"unit"`
+	Quantity   float64 `json:"quantity"`
+	IsBought   bool    `json:"isBought"`
+	RecipeID   int     `json:"recipe_id"`
+	Department string  `json:"department"`
 }
