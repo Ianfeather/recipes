@@ -1,5 +1,7 @@
 # Recipes Go API
 
+Todo list: https://trello.com/b/LnaGkQyG/bigshop
+
 ## Running the app
 
 In the root of the app:
@@ -22,6 +24,12 @@ go fmt ./...
 go test ./... -v
 ```
 
+## runnning db migrations
+I haven't created a decent workflow for this yet :(
+
+What I've been doing is switching the RDS instance to be publicly accessible then accessing it via mysql workbench and running the migrations ad-hoc.
+
+I've also been using workbench for dumping the db from prod to local.
 ## deploying
 Master builds are automatically deployed to AWS via circle-ci ([dashboard](https://app.circleci.com/pipelines/github/Ianfeather))
 

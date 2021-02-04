@@ -45,10 +45,11 @@ func CombineIngredients(r []common.Recipe) map[string]*common.ListIngredient {
 					existingIngredient.Quantity = existingIngredient.Quantity + q
 				} else {
 					newIngredient := common.ListIngredient{
-						Unit:     ingredient.Unit,
-						Quantity: q,
-						IsBought: false,
-						RecipeID: recipe.ID,
+						Unit:       ingredient.Unit,
+						Quantity:   q,
+						IsBought:   false,
+						Department: ingredient.Department,
+						RecipeID:   recipe.ID,
 					}
 					ingredientList[ingredient.Name] = &newIngredient
 				}
@@ -121,7 +122,6 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	combinedIngredients := CombineIngredients(recipes)
-
 	service.RemoveIngredientListItems(userID, a.db)
 	service.AddIngredientListItems(userID, combinedIngredients, a.db)
 
