@@ -13,9 +13,10 @@ import (
 )
 
 func (a *App) recipeHandlerBySlug(w http.ResponseWriter, req *http.Request) {
+	userID := 1
 	slug := mux.Vars(req)["slug"]
 
-	recipe, err := service.GetRecipeBySlug(slug, a.db)
+	recipe, err := service.GetRecipeBySlug(slug, userID, a.db)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -36,13 +37,14 @@ func (a *App) recipeHandlerBySlug(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) recipeHandlerByID(w http.ResponseWriter, req *http.Request) {
+	userID := 1
 	id, err := strconv.Atoi(mux.Vars(req)["id"])
 
 	if err == nil {
 		fmt.Println(err)
 	}
 
-	recipe, err := service.GetRecipeByID(id, a.db)
+	recipe, err := service.GetRecipeByID(id, userID, a.db)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -63,6 +65,7 @@ func (a *App) recipeHandlerByID(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) addRecipeHandler(w http.ResponseWriter, req *http.Request) {
+	userID := 1
 	recipe := common.Recipe{}
 	err := json.NewDecoder(req.Body).Decode(&recipe)
 
@@ -70,7 +73,7 @@ func (a *App) addRecipeHandler(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte("Error decoding json body"))
 	}
 
-	err = service.AddRecipe(recipe, a.db)
+	err = service.AddRecipe(recipe, userID, a.db)
 
 	if err != nil {
 		fmt.Println("could not insert ingredients")
@@ -85,6 +88,7 @@ func (a *App) addRecipeHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) editRecipeHandler(w http.ResponseWriter, req *http.Request) {
+	userID := 1
 	recipe := common.Recipe{}
 	err := json.NewDecoder(req.Body).Decode(&recipe)
 	encoder := json.NewEncoder(w)
@@ -98,7 +102,7 @@ func (a *App) editRecipeHandler(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte("Error: missing id"))
 	}
 
-	err = service.EditRecipe(recipe, a.db)
+	err = service.EditRecipe(recipe, userID, a.db)
 
 	if err != nil {
 		fmt.Println("could not update recipe")
@@ -111,6 +115,7 @@ func (a *App) editRecipeHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) deleteRecipeHandler(w http.ResponseWriter, req *http.Request) {
+	userID := 1
 	recipe := common.Recipe{}
 	err := json.NewDecoder(req.Body).Decode(&recipe)
 	encoder := json.NewEncoder(w)
@@ -124,7 +129,7 @@ func (a *App) deleteRecipeHandler(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte("Error: missing id"))
 	}
 
-	err = service.DeleteRecipe(recipe, a.db)
+	err = service.DeleteRecipe(recipe, userID, a.db)
 
 	if err != nil {
 		fmt.Println("could not delete recipe")

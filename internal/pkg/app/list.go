@@ -114,7 +114,7 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		recipe, err := service.GetRecipeByID(id, a.db)
+		recipe, err := service.GetRecipeByID(id, userID, a.db)
 		if err != nil {
 			fmt.Println(err)
 		}
