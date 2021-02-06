@@ -10,8 +10,9 @@ import (
 )
 
 func (a *App) recipesHandler(w http.ResponseWriter, req *http.Request) {
+	userID := 1
 	encoder := json.NewEncoder(w)
-	recipes, err := service.GetAllRecipes(a.db)
+	recipes, err := service.GetAllRecipes(a.db, userID)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
