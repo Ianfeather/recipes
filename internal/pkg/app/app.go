@@ -52,6 +52,13 @@ func healthHandler(w http.ResponseWriter, req *http.Request) {
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		log.Println(req.RequestURI)
+		log.Println("headers")
+		for name, values := range req.Header {
+			for _, value := range values {
+				log.Println(name, value)
+			}
+		}
+
 		next.ServeHTTP(w, req)
 	})
 }
