@@ -131,6 +131,7 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 	)
 
 	router := mux.NewRouter()
+	router.Use(cors)
 	router.HandleFunc(base+"/health", healthHandler).Methods("GET")
 
 	router.Handle(base+"/recipes", negroni.New(
@@ -186,6 +187,6 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 		negroni.Wrap(http.HandlerFunc(a.getUnitsHandler)))).Methods("GET")
 
 	router.Use(loggingMiddleware)
-	router.Use(cors)
+
 	return router, nil
 }
