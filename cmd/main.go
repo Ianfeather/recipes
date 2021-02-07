@@ -62,7 +62,7 @@ func main() {
 			AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 			AllowedOrigins:   []string{"*"},
 			AllowCredentials: true,
-			AllowedHeaders:   []string{"Authorization"},
+			AllowedHeaders:   []string{"*"},
 		})
 		server := http.Server{
 			Addr:         ":8080",
