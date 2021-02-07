@@ -199,6 +199,16 @@ func DeleteRecipe(recipe common.Recipe, userID int, db *sql.DB) error {
 		return err
 	}
 
+	// Delete the existing relationships between recipe & user
+	stmt, err = db.Prepare("DELETE FROM recipe_user WHERE recipe_id=?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(recipe.ID)
+	if err != nil {
+		return err
+	}
+
 	stmt, err = db.Prepare("DELETE FROM recipe WHERE id=?")
 	if err != nil {
 		return err

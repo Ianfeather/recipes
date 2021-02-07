@@ -109,7 +109,6 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 			iss := "https://" + os.Getenv("AUTH0_DOMAIN") + "/"
 			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
 			if !checkIss {
-				fmt.Println("invalid issuer")
 				return token, errors.New("invalid issuer")
 			}
 
@@ -119,8 +118,6 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 			}
 
 			result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
-			fmt.Println("result")
-			fmt.Println(result)
 			return result, nil
 		},
 		SigningMethod: jwt.SigningMethodRS256,
@@ -140,19 +137,54 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
 		negroni.Wrap(http.HandlerFunc(a.recipesHandler)))).Methods("GET")
 
-	router.HandleFunc(base+"/recipes", a.recipesHandler).Methods("GET")
-	router.HandleFunc(base+"/ingredients", a.ingredientsHandler).Methods("GET")
-	router.HandleFunc(base+"/recipe/{slug:[a-zA-Z-]+}", a.recipeHandlerBySlug).Methods("GET")
-	router.HandleFunc(base+"/recipe/{id:[0-9]+}", a.recipeHandlerByID).Methods("GET")
-	router.HandleFunc(base+"/recipe", a.addRecipeHandler).Methods("POST")
-	router.HandleFunc(base+"/recipe", a.editRecipeHandler).Methods("PUT")
-	router.HandleFunc(base+"/recipe", a.deleteRecipeHandler).Methods("DELETE")
-	router.HandleFunc(base+"/shopping-list", a.getListHandler).Methods("GET")
-	router.HandleFunc(base+"/shopping-list", a.createListHandler).Methods("POST")
-	router.HandleFunc(base+"/shopping-list/buy", a.buyListItemHandler).Methods("PATCH")
-	router.HandleFunc(base+"/shopping-list/extra", a.addExtraListItem).Methods("POST")
-	router.HandleFunc(base+"/shopping-list/clear", a.clearListHandler).Methods("DELETE")
-	router.HandleFunc(base+"/units", a.getUnitsHandler).Methods("GET")
+	router.Handle(base+"/ingredients", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.ingredientsHandler)))).Methods("GET")
+
+	router.Handle(base+"/recipe/{slug:[a-zA-Z-]+}", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.recipeHandlerBySlug)))).Methods("GET")
+
+	router.Handle(base+"/recipe/{id:[0-9]+}", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.recipeHandlerByID)))).Methods("GET")
+
+	router.Handle(base+"/recipe", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.addRecipeHandler)))).Methods("POST")
+
+	router.Handle(base+"/recipe", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.editRecipeHandler)))).Methods("PUT")
+
+	router.Handle(base+"/recipe", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.deleteRecipeHandler)))).Methods("DELETE")
+
+	router.Handle(base+"/shopping-list", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.getListHandler)))).Methods("GET")
+
+	router.Handle(base+"/shopping-list", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.createListHandler)))).Methods("POST")
+
+	router.Handle(base+"/shopping-list/buy", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.buyListItemHandler)))).Methods("PATCH")
+
+	router.Handle(base+"/shopping-list/extra", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.addExtraListItem)))).Methods("POST")
+
+	router.Handle(base+"/shopping-list/clear", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.clearListHandler)))).Methods("DELETE")
+
+	router.Handle(base+"/units", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(a.getUnitsHandler)))).Methods("GET")
+
 	router.Use(loggingMiddleware)
 	router.Use(cors)
 	return router, nil
