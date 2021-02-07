@@ -61,8 +61,8 @@ func main() {
 		c := cors.New(cors.Options{
 			AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 			AllowedOrigins:   []string{"*"},
-			AllowCredentials: true,
 			AllowedHeaders:   []string{"*"},
+			AllowCredentials: true,
 		})
 		server := http.Server{
 			Addr:         ":8080",

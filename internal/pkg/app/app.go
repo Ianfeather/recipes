@@ -39,7 +39,7 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 	cors := handlers.CORS(
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "PATCH", "DELETE"}),
 		handlers.AllowedHeaders([]string{"*"}),
-		handlers.AllowedOrigins([]string{"http://localhost:3000"}),
+		handlers.AllowedOrigins([]string{"*"}),
 		handlers.AllowCredentials(),
 	)
 	router := mux.NewRouter()
