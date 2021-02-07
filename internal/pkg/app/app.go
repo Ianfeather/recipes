@@ -37,7 +37,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 // GetRouter returns the application router
 func (a *App) GetRouter(base string) (*mux.Router, error) {
 	cors := handlers.CORS(
-		handlers.AllowedHeaders([]string{"content-type"}),
+		handlers.AllowedHeaders([]string{"*"}),
 		handlers.AllowedOrigins([]string{"*"}),
 		handlers.AllowCredentials(),
 	)

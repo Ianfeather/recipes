@@ -59,7 +59,10 @@ func main() {
 
 	if len(args) > 1 && args[1] == "dev" {
 		c := cors.New(cors.Options{
-			AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+			AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+			AllowedOrigins:   []string{"*"},
+			AllowCredentials: true,
+			AllowedHeaders:   []string{"Authorization"},
 		})
 		server := http.Server{
 			Addr:         ":8080",
