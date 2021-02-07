@@ -126,7 +126,7 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 	cors := handlers.CORS(
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "PATCH", "DELETE"}),
 		handlers.AllowedHeaders([]string{"*"}),
-		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedOrigins([]string{os.Getenv("SITE_HOST")}),
 		handlers.AllowCredentials(),
 	)
 
