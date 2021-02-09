@@ -51,23 +51,16 @@ func healthHandler(w http.ResponseWriter, req *http.Request) {
 
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		for name, values := range req.Header {
-			for _, value := range values {
-				log.Println(name, value)
-			}
-		}
-
+		log.Println(req.URL)
 		next.ServeHTTP(w, req)
 	})
 }
 
 func getPemCert(token *jwt.Token) (string, error) {
-	fmt.Println("getting pem cert")
 	cert := ""
 	resp, err := http.Get("https://" + os.Getenv("AUTH0_DOMAIN") + "/.well-known/jwks.json")
 
 	if err != nil {
-		fmt.Println("failed request")
 		return cert, err
 	}
 	defer resp.Body.Close()
@@ -76,7 +69,6 @@ func getPemCert(token *jwt.Token) (string, error) {
 	err = json.NewDecoder(resp.Body).Decode(&jwks)
 
 	if err != nil {
-		fmt.Println("failed decode")
 		return cert, err
 	}
 
@@ -87,13 +79,10 @@ func getPemCert(token *jwt.Token) (string, error) {
 	}
 
 	if cert == "" {
-		fmt.Println("no key")
 		err := errors.New("unable to find appropriate key")
 		return cert, err
 	}
 
-	fmt.Println("key")
-	fmt.Println(cert)
 	return cert, nil
 }
 
@@ -113,7 +102,6 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 
 			checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(os.Getenv("AUTH0_AUDIENCE"), false)
 			if !checkAud {
-				fmt.Println("Invalid audience")
 				return token, errors.New("Invalid audience")
 			}
 
@@ -121,20 +109,15 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 			iss := "https://" + os.Getenv("AUTH0_DOMAIN") + "/"
 			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
 			if !checkIss {
-				fmt.Println("Invalid issue")
 				return token, errors.New("invalid issuer")
 			}
 
 			cert, err := getPemCert(token)
 			if err != nil {
-				fmt.Println("no pem cert")
 
 				panic(err.Error())
 			}
-			fmt.Println("made it this far")
 			result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
-			fmt.Println("result")
-			fmt.Println(result)
 			return result, nil
 		},
 		SigningMethod: jwt.SigningMethodRS256,
