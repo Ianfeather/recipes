@@ -62,10 +62,12 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 func getPemCert(token *jwt.Token) (string, error) {
+	fmt.Println("getting pem cert")
 	cert := ""
 	resp, err := http.Get("https://" + os.Getenv("AUTH0_DOMAIN") + "/.well-known/jwks.json")
 
 	if err != nil {
+		fmt.Println("failed request")
 		return cert, err
 	}
 	defer resp.Body.Close()
@@ -74,6 +76,7 @@ func getPemCert(token *jwt.Token) (string, error) {
 	err = json.NewDecoder(resp.Body).Decode(&jwks)
 
 	if err != nil {
+		fmt.Println("failed decode")
 		return cert, err
 	}
 
@@ -84,10 +87,13 @@ func getPemCert(token *jwt.Token) (string, error) {
 	}
 
 	if cert == "" {
+		fmt.Println("no key")
 		err := errors.New("unable to find appropriate key")
 		return cert, err
 	}
 
+	fmt.Println("key")
+	fmt.Println(cert)
 	return cert, nil
 }
 
