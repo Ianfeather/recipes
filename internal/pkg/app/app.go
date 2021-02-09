@@ -51,8 +51,6 @@ func healthHandler(w http.ResponseWriter, req *http.Request) {
 
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		log.Println(req.RequestURI)
-		log.Println("headers")
 		for name, values := range req.Header {
 			for _, value := range values {
 				log.Println(name, value)
@@ -109,6 +107,7 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 
 			checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(os.Getenv("AUTH0_AUDIENCE"), false)
 			if !checkAud {
+				fmt.Println("Invalid audience")
 				return token, errors.New("Invalid audience")
 			}
 
@@ -116,15 +115,20 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 			iss := "https://" + os.Getenv("AUTH0_DOMAIN") + "/"
 			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
 			if !checkIss {
+				fmt.Println("Invalid issue")
 				return token, errors.New("invalid issuer")
 			}
 
 			cert, err := getPemCert(token)
 			if err != nil {
+				fmt.Println("no pem cert")
+
 				panic(err.Error())
 			}
-
+			fmt.Println("made it this far")
 			result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+			fmt.Println("result")
+			fmt.Println(result)
 			return result, nil
 		},
 		SigningMethod: jwt.SigningMethodRS256,

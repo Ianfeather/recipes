@@ -16,7 +16,6 @@ import (
 	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 )
 
 var muxLambda *gorillamux.GorillaMuxAdapter
@@ -58,17 +57,11 @@ func main() {
 	args := os.Args
 
 	if len(args) > 1 && args[1] == "dev" {
-		c := cors.New(cors.Options{
-			AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
-			AllowedOrigins:   []string{"*"},
-			AllowedHeaders:   []string{"*"},
-			AllowCredentials: true,
-		})
 		server := http.Server{
 			Addr:         ":8080",
 			ReadTimeout:  3000 * time.Millisecond,
 			WriteTimeout: 3000 * time.Millisecond,
-			Handler:      c.Handler(router),
+			Handler:      router,
 		}
 		server.ListenAndServe()
 	} else {

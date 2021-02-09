@@ -10,6 +10,7 @@ import (
 )
 
 func (a *App) recipesHandler(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("In recipes handler")
 	userID := 1
 	encoder := json.NewEncoder(w)
 	recipes, err := service.GetAllRecipes(a.db, userID)
