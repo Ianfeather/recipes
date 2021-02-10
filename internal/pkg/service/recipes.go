@@ -12,11 +12,10 @@ type Recipe struct {
 }
 
 // GetAllRecipes returns all recipes in the recipe table
-func GetAllRecipes(db *sql.DB, userID int) ([]Recipe, error) {
+func GetAllRecipes(db *sql.DB, userID string) ([]Recipe, error) {
 	recipesQuery := `
-		SELECT recipe.id as id, recipe.name as name FROM recipe_user
-			INNER JOIN recipe on recipe_user.recipe_id = recipe.id
-			WHERE recipe_user.user_id = ?
+		SELECT id, name FROM recipe
+			WHERE user_id = ?
 			ORDER BY lower(recipe.name);
 	`
 	results, err := db.Query(recipesQuery, userID)

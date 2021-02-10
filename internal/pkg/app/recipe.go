@@ -9,11 +9,12 @@ import (
 	"recipes/internal/pkg/service"
 	"strconv"
 
+	"github.com/form3tech-oss/jwt-go"
 	"github.com/gorilla/mux"
 )
 
 func (a *App) recipeHandlerBySlug(w http.ResponseWriter, req *http.Request) {
-	userID := 1
+	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	slug := mux.Vars(req)["slug"]
 
 	recipe, err := service.GetRecipeBySlug(slug, userID, a.db)
@@ -37,7 +38,7 @@ func (a *App) recipeHandlerBySlug(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) recipeHandlerByID(w http.ResponseWriter, req *http.Request) {
-	userID := 1
+	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	id, err := strconv.Atoi(mux.Vars(req)["id"])
 
 	if err == nil {
@@ -65,7 +66,7 @@ func (a *App) recipeHandlerByID(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) addRecipeHandler(w http.ResponseWriter, req *http.Request) {
-	userID := 1
+	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	recipe := common.Recipe{}
 	err := json.NewDecoder(req.Body).Decode(&recipe)
 
@@ -88,7 +89,7 @@ func (a *App) addRecipeHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) editRecipeHandler(w http.ResponseWriter, req *http.Request) {
-	userID := 1
+	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	recipe := common.Recipe{}
 	err := json.NewDecoder(req.Body).Decode(&recipe)
 	encoder := json.NewEncoder(w)
@@ -115,7 +116,7 @@ func (a *App) editRecipeHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) deleteRecipeHandler(w http.ResponseWriter, req *http.Request) {
-	userID := 1
+	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	recipe := common.Recipe{}
 	err := json.NewDecoder(req.Body).Decode(&recipe)
 	encoder := json.NewEncoder(w)

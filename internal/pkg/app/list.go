@@ -7,6 +7,8 @@ import (
 	"recipes/internal/pkg/common"
 	"recipes/internal/pkg/service"
 	"strconv"
+
+	"github.com/form3tech-oss/jwt-go"
 )
 
 // ResponseObject is the json response
@@ -71,7 +73,7 @@ func CombineIngredients(r []common.Recipe) map[string]*common.ListIngredient {
 }
 
 func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
-	userID := 1
+	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 
 	recipes, err := service.GetRecipesFromList(userID, a.db)
 	ingredients, err := service.GetIngredientListItems(userID, a.db)
@@ -96,8 +98,7 @@ func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
-	// TODO: Identity
-	userID := 1
+	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 
 	recipeIDs := make([]string, 0)
 	err := json.NewDecoder(req.Body).Decode(&recipeIDs)
@@ -139,7 +140,7 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) addExtraListItem(w http.ResponseWriter, req *http.Request) {
-	userID := 1
+	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 
 	var extraItem ListItem
 	err := json.NewDecoder(req.Body).Decode(&extraItem)
@@ -166,7 +167,7 @@ func (a *App) addExtraListItem(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) buyListItemHandler(w http.ResponseWriter, req *http.Request) {
-	userID := 1
+	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 
 	var listItem ListItem
 	err := json.NewDecoder(req.Body).Decode(&listItem)
@@ -197,7 +198,7 @@ func (a *App) buyListItemHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) clearListHandler(w http.ResponseWriter, req *http.Request) {
-	userID := 1
+	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	service.RemoveAllListItems(userID, a.db)
 
 	response := &ResponseObject{}

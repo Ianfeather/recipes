@@ -47,13 +47,12 @@ func getIngredientsByRecipeID(id int, db *sql.DB) ([]common.Ingredient, error) {
 }
 
 // GetRecipeBySlug fetches a recipe from the database by Slug
-func GetRecipeBySlug(slug string, userID int, db *sql.DB) (r *common.Recipe, e error) {
+func GetRecipeBySlug(slug string, userID string, db *sql.DB) (r *common.Recipe, e error) {
 	recipe := &common.Recipe{Ingredients: []common.Ingredient{}}
 	recipeQuery := `
-		SELECT recipe.id as id, name, remote_url
-			FROM recipe_user
-			INNER JOIN recipe on recipe_user.recipe_id = recipe.id
-			WHERE recipe_user.slug= ? AND recipe_user.user_id = ?;`
+		SELECT id, name, remote_url
+			FROM recipe
+			WHERE slug = ? AND user_id = ?;`
 
 	var remoteURL sql.NullString
 	err := db.QueryRow(recipeQuery, slug, userID).Scan(&recipe.ID, &recipe.Name, &remoteURL)
@@ -78,13 +77,12 @@ func GetRecipeBySlug(slug string, userID int, db *sql.DB) (r *common.Recipe, e e
 }
 
 // GetRecipeByID fetches a recipe from the database by ID
-func GetRecipeByID(id int, userID int, db *sql.DB) (r *common.Recipe, e error) {
+func GetRecipeByID(id int, userID string, db *sql.DB) (r *common.Recipe, e error) {
 	recipe := &common.Recipe{Ingredients: []common.Ingredient{}}
 	recipeQuery := `
-		SELECT recipe.id as id, name, remote_url
-			FROM recipe_user
-			INNER JOIN recipe on recipe_user.recipe_id = recipe.id
-			WHERE recipe_user.recipe_id= ? AND recipe_user.user_id = ?;`
+		SELECT id, name, remote_url
+			FROM recipe
+			WHERE id = ? AND user_id = ?;`
 
 	var remoteURL sql.NullString
 	err := db.QueryRow(recipeQuery, id, userID).Scan(&recipe.ID, &recipe.Name, &remoteURL)
@@ -109,15 +107,15 @@ func GetRecipeByID(id int, userID int, db *sql.DB) (r *common.Recipe, e error) {
 }
 
 // AddRecipe inserts recipe, ingredients into the DB
-func AddRecipe(recipe common.Recipe, userID int, db *sql.DB) error {
+func AddRecipe(recipe common.Recipe, userID string, db *sql.DB) error {
 
-	stmt, err := db.Prepare("INSERT INTO recipe (name, slug, remote_url) VALUES (?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO recipe (name, slug, remote_url, user_id) VALUES (?, ?, ?, ?)")
 
 	if err != nil {
 		return err
 	}
 
-	res, err := stmt.Exec(recipe.Name, common.Slugify(recipe.Name), recipe.RemoteURL)
+	res, err := stmt.Exec(recipe.Name, common.Slugify(recipe.Name), recipe.RemoteURL, userID)
 
 	if err != nil {
 		fmt.Println("could not insert recipe")
@@ -133,29 +131,25 @@ func AddRecipe(recipe common.Recipe, userID int, db *sql.DB) error {
 	if err = insertParts(recipe, db); err != nil {
 		return err
 	}
-	if err = addRecipeToUser(recipe, userID, db); err != nil {
-		return err
-	}
 	return nil
 }
 
 // EditRecipe updates recipe information
-func EditRecipe(recipe common.Recipe, userID int, db *sql.DB) error {
+func EditRecipe(recipe common.Recipe, userID string, db *sql.DB) error {
 	var id string
 	// Checking to see if this recipe exists for this user
-	if err := db.QueryRow("SELECT id FROM recipe_user WHERE recipe_id=? AND user_id = ?;", recipe.ID, userID).Scan(&id); err == sql.ErrNoRows {
+	if err := db.QueryRow("SELECT id FROM recipe WHERE id=? AND user_id = ?;", recipe.ID, userID).Scan(&id); err == sql.ErrNoRows {
 		fmt.Println("no results")
 		return err
 	} else if err != nil {
 		return err
 	}
-
-	stmt, err := db.Prepare("UPDATE recipe SET name=?, remote_url=? WHERE id=?")
+	stmt, err := db.Prepare("UPDATE recipe SET name=?, remote_url=? WHERE id=? AND user_id=?")
 	if err != nil {
 		return err
 	}
 
-	if _, err = stmt.Exec(recipe.Name, recipe.RemoteURL, recipe.ID); err != nil {
+	if _, err = stmt.Exec(recipe.Name, recipe.RemoteURL, recipe.ID, userID); err != nil {
 		return err
 	}
 
@@ -180,17 +174,18 @@ func EditRecipe(recipe common.Recipe, userID int, db *sql.DB) error {
 }
 
 // DeleteRecipe removes a recipe from the db
-func DeleteRecipe(recipe common.Recipe, userID int, db *sql.DB) error {
+func DeleteRecipe(recipe common.Recipe, userID string, db *sql.DB) error {
 	var id string
 	// Checking to see if this recipe exists for this user
-	if err := db.QueryRow("SELECT id FROM recipe_user WHERE recipe_id=? AND user_id = ?;", recipe.ID, userID).Scan(&id); err == sql.ErrNoRows {
+	if err := db.QueryRow("SELECT id FROM recipe WHERE id=? AND user_id = ?;", recipe.ID, userID).Scan(&id); err == sql.ErrNoRows {
 		fmt.Println("no results")
 		return err
 	} else if err != nil {
 		return err
 	}
+
 	// Delete the existing relationships between recipe & ingredients
-	stmt, err := db.Prepare("DELETE FROM part WHERE recipe_id=?")
+	stmt, err := db.Prepare("DELETE FROM part WHERE recipe_id=?;")
 	if err != nil {
 		return err
 	}
@@ -199,22 +194,22 @@ func DeleteRecipe(recipe common.Recipe, userID int, db *sql.DB) error {
 		return err
 	}
 
-	// Delete the existing relationships between recipe & user
-	stmt, err = db.Prepare("DELETE FROM recipe_user WHERE recipe_id=?")
+	// Delete the recipe items from the shopping list
+	stmt, err = db.Prepare("DELETE FROM list WHERE recipe_id=? and user_id=?;")
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(recipe.ID)
-	if err != nil {
-		return err
-	}
-
-	stmt, err = db.Prepare("DELETE FROM recipe WHERE id=?")
+	_, err = stmt.Exec(recipe.ID, userID)
 	if err != nil {
 		return err
 	}
 
-	if _, err = stmt.Exec(recipe.ID); err != nil {
+	stmt, err = db.Prepare("DELETE FROM recipe WHERE id=? and user_id = ?;")
+	if err != nil {
+		return err
+	}
+
+	if _, err = stmt.Exec(recipe.ID, userID); err != nil {
 		return err
 	}
 
@@ -258,18 +253,5 @@ func insertParts(recipe common.Recipe, db *sql.DB) error {
 		return err
 	}
 
-	return nil
-}
-
-func addRecipeToUser(recipe common.Recipe, userID int, db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO recipe_user (recipe_id, recipe_slug, user_id) values (?,?,?);")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(recipe.ID, common.Slugify(recipe.Name), userID)
-	if err != nil {
-		fmt.Println("could not relate recipe to user")
-		return err
-	}
 	return nil
 }
