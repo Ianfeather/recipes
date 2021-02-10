@@ -30,6 +30,7 @@ I haven't created a decent workflow for this yet :(
 What I've been doing is switching the RDS instance to be publicly accessible then accessing it via mysql workbench and running the migrations ad-hoc.
 
 I've also been using workbench for dumping the db from prod to local.
+
 ## deploying
 Master builds are automatically deployed to AWS via circle-ci ([dashboard](https://app.circleci.com/pipelines/github/Ianfeather))
 
@@ -46,3 +47,4 @@ Local builds can be deployed manually with the following:
 - [api gateway](https://console.aws.amazon.com/apigateway/home?region=us-east-1#/apis/pleeyu7yrd/stages/prod)
 - [cloudwatch logs](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/$252Faws$252Flambda$252Frecipes)
 - [RDS database](https://console.aws.amazon.com/rds/home?region=us-east-1#database:id=big-shop;is-cluster=false;tab=maintenance-and-backups)
+- [Auth0 (for managing user)](https://manage.auth0.com/dashboard/eu/dev-x-n37k6b/applications/HxkTOH3ZYxjbsgrVI4ii1CV2TQx7hk9G/settings)
