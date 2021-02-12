@@ -2,7 +2,7 @@ package service
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 )
 
 // Recipe is a lightweight recipe type w/o ingredients
@@ -21,7 +21,7 @@ func GetAllRecipes(db *sql.DB, userID string) ([]Recipe, error) {
 	results, err := db.Query(recipesQuery, userID)
 
 	if err != nil {
-		fmt.Println("Error querying recipes")
+		log.Println("Error querying recipes")
 		return nil, err
 	}
 

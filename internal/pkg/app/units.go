@@ -1,11 +1,11 @@
 package app
 
 import (
+	"log"
 	"recipes/internal/pkg/service"
 
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -19,7 +19,7 @@ func (a *App) getUnitsHandler(w http.ResponseWriter, req *http.Request) {
 			err = encoder.Encode(make([]string, 0))
 			return
 		}
-		fmt.Println(err)
+		log.Println(err)
 		http.Error(w, "Failed to get Units from db", http.StatusInternalServerError)
 		return
 	}
@@ -27,6 +27,5 @@ func (a *App) getUnitsHandler(w http.ResponseWriter, req *http.Request) {
 	err = encoder.Encode(units)
 	if err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
-		return
 	}
 }

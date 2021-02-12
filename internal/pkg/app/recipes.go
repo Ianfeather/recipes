@@ -18,7 +18,7 @@ func (a *App) recipesHandler(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			http.Error(w, "Recipe not found", http.StatusNotFound)
+			http.Error(w, "Recipes not found", http.StatusNotFound)
 			err = encoder.Encode(make([]string, 0))
 			return
 		}

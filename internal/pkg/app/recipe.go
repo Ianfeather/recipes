@@ -3,7 +3,6 @@ package app
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"recipes/internal/pkg/common"
 	"recipes/internal/pkg/service"
@@ -16,7 +15,6 @@ import (
 func (a *App) recipeHandlerBySlug(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	slug := mux.Vars(req)["slug"]
-
 	recipe, err := service.GetRecipeBySlug(slug, userID, a.db)
 
 	if err != nil {
@@ -24,16 +22,13 @@ func (a *App) recipeHandlerBySlug(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "Recipe not found", http.StatusNotFound)
 			return
 		}
-		fmt.Println(err)
 		http.Error(w, "Failed to parse recipe from db", http.StatusInternalServerError)
 		return
 	}
 
 	encoder := json.NewEncoder(w)
-	err = encoder.Encode(recipe)
-	if err != nil {
+	if encoder.Encode(recipe); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
-		return
 	}
 }
 
@@ -41,8 +36,9 @@ func (a *App) recipeHandlerByID(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	id, err := strconv.Atoi(mux.Vars(req)["id"])
 
-	if err == nil {
-		fmt.Println(err)
+	if err != nil {
+		http.Error(w, "Failed to parse id", http.StatusBadRequest)
+		return
 	}
 
 	recipe, err := service.GetRecipeByID(id, userID, a.db)
@@ -52,92 +48,82 @@ func (a *App) recipeHandlerByID(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "Recipe not found", http.StatusNotFound)
 			return
 		}
-		fmt.Println(err)
 		http.Error(w, "Failed to parse recipe from db", http.StatusInternalServerError)
 		return
 	}
 
 	encoder := json.NewEncoder(w)
-	err = encoder.Encode(recipe)
-	if err != nil {
+	if err = encoder.Encode(recipe); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
-		return
 	}
 }
 
 func (a *App) addRecipeHandler(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	recipe := common.Recipe{}
-	err := json.NewDecoder(req.Body).Decode(&recipe)
 
-	if err != nil {
-		w.Write([]byte("Error decoding json body"))
+	if err := json.NewDecoder(req.Body).Decode(&recipe); err != nil {
+		http.Error(w, "Error decoding json body", http.StatusBadRequest)
+		return
 	}
 
-	err = service.AddRecipe(recipe, userID, a.db)
-
-	if err != nil {
-		fmt.Println("could not insert ingredients")
-		fmt.Println(err.Error())
+	if err := service.AddRecipe(recipe, userID, a.db); err != nil {
+		http.Error(w, "could not insert ingredients", http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
 	encoder := json.NewEncoder(w)
-	err = encoder.Encode("ok")
-
-	fmt.Printf("Stored %s", recipe.Name)
+	if err := encoder.Encode("ok"); err != nil {
+		http.Error(w, "Error encoding json", http.StatusInternalServerError)
+	}
 }
 
 func (a *App) editRecipeHandler(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	recipe := common.Recipe{}
-	err := json.NewDecoder(req.Body).Decode(&recipe)
 	encoder := json.NewEncoder(w)
 
-	if err != nil {
-		w.Write([]byte("Error decoding json body"))
+	if err := json.NewDecoder(req.Body).Decode(&recipe); err != nil {
+		http.Error(w, "Error decoding json body", http.StatusBadRequest)
+		return
 	}
 
 	if recipe.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Error: missing id"))
+		http.Error(w, "Error: missing id", http.StatusBadRequest)
+		return
 	}
 
-	err = service.EditRecipe(recipe, userID, a.db)
-
-	if err != nil {
-		fmt.Println("could not update recipe")
-		fmt.Println(err.Error())
+	if err := service.EditRecipe(recipe, userID, a.db); err != nil {
+		http.Error(w, "could not update recipe", http.StatusInternalServerError)
+		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	err = encoder.Encode("ok")
-	fmt.Printf("Updated %s", recipe.Name)
+	if err := encoder.Encode("ok"); err != nil {
+		http.Error(w, "Error encoding json", http.StatusInternalServerError)
+	}
 }
 
 func (a *App) deleteRecipeHandler(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	recipe := common.Recipe{}
-	err := json.NewDecoder(req.Body).Decode(&recipe)
 	encoder := json.NewEncoder(w)
-
-	if err != nil {
-		w.Write([]byte("Error decoding json body"))
+	if err := json.NewDecoder(req.Body).Decode(&recipe); err != nil {
+		http.Error(w, "Error decoding json body", http.StatusBadRequest)
+		return
 	}
 
 	if recipe.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Error: missing id"))
+		http.Error(w, "Error: missing id", http.StatusBadRequest)
+		return
 	}
 
-	err = service.DeleteRecipe(recipe, userID, a.db)
-
-	if err != nil {
-		fmt.Println("could not delete recipe")
-		fmt.Println(err.Error())
+	if err := service.DeleteRecipe(recipe, userID, a.db); err != nil {
+		http.Error(w, "could not delete recipe", http.StatusInternalServerError)
+		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	err = encoder.Encode("ok")
-	fmt.Printf("Updated %s", recipe.Name)
+	if err := encoder.Encode("ok"); err != nil {
+		http.Error(w, "Error encoding json", http.StatusInternalServerError)
+	}
 }

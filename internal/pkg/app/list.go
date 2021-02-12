@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"recipes/internal/pkg/common"
 	"recipes/internal/pkg/service"
@@ -80,7 +79,8 @@ func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 	extras, err := service.GetExtraListItems(userID, a.db)
 
 	if err != nil {
-		w.Write([]byte("Error Fetching List Items"))
+		http.Error(w, "Error Fetching List Items", http.StatusInternalServerError)
+		return
 	}
 
 	response := &ResponseObject{
@@ -90,8 +90,7 @@ func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	encoder := json.NewEncoder(w)
-	err = encoder.Encode(response)
-	if err != nil {
+	if err = encoder.Encode(response); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
 		return
 	}
@@ -101,10 +100,9 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 
 	recipeIDs := make([]string, 0)
-	err := json.NewDecoder(req.Body).Decode(&recipeIDs)
-
-	if err != nil {
-		w.Write([]byte("Error decoding json body"))
+	if err := json.NewDecoder(req.Body).Decode(&recipeIDs); err != nil {
+		http.Error(w, "Error decoding json body", http.StatusBadRequest)
+		return
 	}
 
 	response := &ResponseObject{}
@@ -113,29 +111,42 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 	for i := 0; i < len(recipeIDs); i++ {
 		id, err := strconv.Atoi(recipeIDs[i])
 		if err != nil {
-			fmt.Println(err)
+			http.Error(w, "Cannot parse recipe id", http.StatusBadRequest)
+			return
 		}
 		recipe, err := service.GetRecipeByID(id, userID, a.db)
 		if err != nil {
-			fmt.Println(err)
+			http.Error(w, "Cannot get recipe", http.StatusInternalServerError)
+			return
 		}
 		recipes = append(recipes, *recipe)
 	}
 
 	combinedIngredients := CombineIngredients(recipes)
-	service.RemoveIngredientListItems(userID, a.db)
-	service.AddIngredientListItems(userID, combinedIngredients, a.db)
+	if err := service.RemoveIngredientListItems(userID, a.db); err != nil {
+		http.Error(w, "Cannot delete list items", http.StatusInternalServerError)
+		return
+	}
+	if err := service.AddIngredientListItems(userID, combinedIngredients, a.db); err != nil {
+		http.Error(w, "Cannot add list items", http.StatusInternalServerError)
+		return
+	}
 
 	// Return the new items + extras
 	response.Recipes = recipeIDs
 	response.Ingredients = combinedIngredients
-	response.Extras, err = service.GetExtraListItems(userID, a.db)
+	extras, err := service.GetExtraListItems(userID, a.db)
+
+	if err != nil {
+		http.Error(w, "Cannot get extra list items", http.StatusInternalServerError)
+		return
+	}
+
+	response.Extras = extras
 
 	encoder := json.NewEncoder(w)
-	err = encoder.Encode(response)
-	if err != nil {
+	if err := encoder.Encode(response); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
-		return
 	}
 }
 
@@ -143,26 +154,24 @@ func (a *App) addExtraListItem(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 
 	var extraItem ListItem
-	err := json.NewDecoder(req.Body).Decode(&extraItem)
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Error decoding json body"))
+	if err := json.NewDecoder(req.Body).Decode(&extraItem); err != nil {
+		http.Error(w, "Error decoding json body", http.StatusBadRequest)
 		return
 	}
 
 	if extraItem.Name == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Missing item name"))
+		http.Error(w, "Missing item name", http.StatusBadRequest)
 		return
 	}
 
-	err = service.AddExtraListItem(userID, extraItem.Name, extraItem.IsBought, a.db)
-	encoder := json.NewEncoder(w)
-	err = encoder.Encode(&common.SimpleResponse{Status: "ok"})
-	if err != nil {
-		http.Error(w, "Error encoding json", http.StatusInternalServerError)
+	if err := service.AddExtraListItem(userID, extraItem.Name, extraItem.IsBought, a.db); err != nil {
+		http.Error(w, "Cannot add list items", http.StatusInternalServerError)
 		return
+	}
+
+	encoder := json.NewEncoder(w)
+	if err := encoder.Encode(&common.SimpleResponse{Status: "ok"}); err != nil {
+		http.Error(w, "Error encoding json", http.StatusInternalServerError)
 	}
 }
 
@@ -170,42 +179,36 @@ func (a *App) buyListItemHandler(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 
 	var listItem ListItem
-	err := json.NewDecoder(req.Body).Decode(&listItem)
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Error decoding json body"))
+	if err := json.NewDecoder(req.Body).Decode(&listItem); err != nil {
+		http.Error(w, "Error decoding json body", http.StatusBadRequest)
 		return
 	}
 
 	if listItem.Name == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Missing item name"))
+		http.Error(w, "Missing item name", http.StatusBadRequest)
 		return
 	}
 
-	err = service.BuyListItem(userID, listItem.Name, listItem.IsBought, a.db)
-	if err != nil {
+	if err := service.BuyListItem(userID, listItem.Name, listItem.IsBought, a.db); err != nil {
 		http.Error(w, "Error marking item as bought", http.StatusInternalServerError)
 		return
 	}
 	encoder := json.NewEncoder(w)
-	err = encoder.Encode(listItem)
-	if err != nil {
+	if err := encoder.Encode(listItem); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
-		return
 	}
 }
 
 func (a *App) clearListHandler(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
-	service.RemoveAllListItems(userID, a.db)
+	if err := service.RemoveAllListItems(userID, a.db); err != nil {
+		http.Error(w, "Error removing list items", http.StatusInternalServerError)
+		return
+	}
 
 	response := &ResponseObject{}
 	encoder := json.NewEncoder(w)
-	err := encoder.Encode(response)
-	if err != nil {
+	if err := encoder.Encode(response); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
-		return
 	}
 }

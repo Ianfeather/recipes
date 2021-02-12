@@ -23,9 +23,7 @@ func (a *App) ingredientsHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = encoder.Encode(ingredients)
-	if err != nil {
+	if err = encoder.Encode(ingredients); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
-		return
 	}
 }
