@@ -14,13 +14,14 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
+	"github.com/codegangsta/negroni"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
+
 	"github.com/rs/cors"
 )
 
 var muxLambda *gorillamux.GorillaMuxAdapter
-var router *mux.Router
+var router *negroni.Negroni
 
 func init() {
 	pass := os.Getenv("DB_PASSWORD")
@@ -47,7 +48,7 @@ func init() {
 		fmt.Println(err)
 	}
 
-	muxLambda = gorillamux.New(router)
+	// muxLambda = gorillamux.New(router)
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
