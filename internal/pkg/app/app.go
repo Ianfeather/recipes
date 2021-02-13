@@ -1,20 +1,20 @@
 package app
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"recipes/internal/pkg/common"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
-	"github.com/codegangsta/negroni"
+	"github.com/urfave/negroni"
 	"github.com/form3tech-oss/jwt-go"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 // App will hold the dependencies of the application
@@ -37,6 +37,8 @@ type JSONWebKeys struct {
 	X5c []string `json:"x5c"`
 }
 
+type contextKey string
+
 // NewApp returns the application itself
 func NewApp(env *common.Env) (*App, error) {
 	app := &App{
@@ -49,11 +51,13 @@ func healthHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("ok"))
 }
 
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		log.Println(req.URL)
-		next.ServeHTTP(w, req)
-	})
+func userMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	ctx := context.WithValue(
+		r.Context(),
+		contextKey("userID"),
+		r.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string),
+	)
+	next.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func getPemCert(token *jwt.Token) (string, error) {
@@ -87,7 +91,7 @@ func getPemCert(token *jwt.Token) (string, error) {
 }
 
 // GetRouter returns the application router
-func (a *App) GetRouter(base string) (*mux.Router, error) {
+func (a *App) GetRouter(base string) (*negroni.Negroni, error) {
 
 	jwtMiddleware := jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
@@ -105,7 +109,6 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 				return token, errors.New("Invalid audience")
 			}
 
-			// Verify 'iss' claim
 			iss := "https://" + os.Getenv("AUTH0_DOMAIN") + "/"
 			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
 			if !checkIss {
@@ -123,70 +126,35 @@ func (a *App) GetRouter(base string) (*mux.Router, error) {
 		SigningMethod: jwt.SigningMethodRS256,
 	})
 
-	cors := handlers.CORS(
-		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "PATCH", "DELETE"}),
-		handlers.AllowedHeaders([]string{"*"}),
-		handlers.AllowedOrigins([]string{os.Getenv("SITE_HOST")}),
-		handlers.AllowCredentials(),
-	)
-
 	router := mux.NewRouter()
-	router.Use(cors)
+
 	router.HandleFunc(base+"/health", healthHandler).Methods("GET")
+	router.HandleFunc(base+"/recipes", a.recipesHandler).Methods("GET")
+	router.HandleFunc(base+"/ingredients", a.ingredientsHandler).Methods("GET")
+	router.HandleFunc(base+"/recipe/{slug:[a-zA-Z-]+}", a.recipeHandlerBySlug).Methods("GET")
+	router.HandleFunc(base+"/recipe/{id:[0-9]+}", a.recipeHandlerByID).Methods("GET")
+	router.HandleFunc(base+"/recipe", a.addRecipeHandler).Methods("POST")
+	router.HandleFunc(base+"/recipe", a.editRecipeHandler).Methods("PUT")
+	router.HandleFunc(base+"/recipe", a.deleteRecipeHandler).Methods("DELETE")
+	router.HandleFunc(base+"/shopping-list", a.getListHandler).Methods("GET")
+	router.HandleFunc(base+"/shopping-list", a.createListHandler).Methods("POST")
+	router.HandleFunc(base+"/shopping-list/buy", a.buyListItemHandler).Methods("PATCH")
+	router.HandleFunc(base+"/shopping-list/extra", a.addExtraListItem).Methods("POST")
+	router.HandleFunc(base+"/shopping-list/clear", a.clearListHandler).Methods("DELETE")
+	router.HandleFunc(base+"/units", a.getUnitsHandler).Methods("GET")
 
-	router.Handle(base+"/recipes", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.recipesHandler)))).Methods("GET")
+	c := cors.New(cors.Options{
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowedOrigins:   []string{"*"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	})
 
-	router.Handle(base+"/ingredients", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.ingredientsHandler)))).Methods("GET")
+	n := negroni.New(negroni.NewLogger())
+	n.Use(c)
+	n.Use(negroni.HandlerFunc(jwtMiddleware.HandlerWithNext))
+	n.Use(negroni.HandlerFunc(userMiddleware))
+	n.UseHandler(router)
 
-	router.Handle(base+"/recipe/{slug:[a-zA-Z-]+}", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.recipeHandlerBySlug)))).Methods("GET")
-
-	router.Handle(base+"/recipe/{id:[0-9]+}", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.recipeHandlerByID)))).Methods("GET")
-
-	router.Handle(base+"/recipe", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.addRecipeHandler)))).Methods("POST")
-
-	router.Handle(base+"/recipe", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.editRecipeHandler)))).Methods("PUT")
-
-	router.Handle(base+"/recipe", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.deleteRecipeHandler)))).Methods("DELETE")
-
-	router.Handle(base+"/shopping-list", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.getListHandler)))).Methods("GET")
-
-	router.Handle(base+"/shopping-list", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.createListHandler)))).Methods("POST")
-
-	router.Handle(base+"/shopping-list/buy", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.buyListItemHandler)))).Methods("PATCH")
-
-	router.Handle(base+"/shopping-list/extra", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.addExtraListItem)))).Methods("POST")
-
-	router.Handle(base+"/shopping-list/clear", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.clearListHandler)))).Methods("DELETE")
-
-	router.Handle(base+"/units", negroni.New(
-		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(a.getUnitsHandler)))).Methods("GET")
-
-	router.Use(loggingMiddleware)
-
-	return router, nil
+	return n, nil
 }

@@ -8,12 +8,11 @@ import (
 	"recipes/internal/pkg/service"
 	"strconv"
 
-	"github.com/form3tech-oss/jwt-go"
 	"github.com/gorilla/mux"
 )
 
 func (a *App) recipeHandlerBySlug(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 	slug := mux.Vars(req)["slug"]
 	recipe, err := service.GetRecipeBySlug(slug, userID, a.db)
 
@@ -33,7 +32,7 @@ func (a *App) recipeHandlerBySlug(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) recipeHandlerByID(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 	id, err := strconv.Atoi(mux.Vars(req)["id"])
 
 	if err != nil {
@@ -59,7 +58,7 @@ func (a *App) recipeHandlerByID(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) addRecipeHandler(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 	recipe := common.Recipe{}
 
 	if err := json.NewDecoder(req.Body).Decode(&recipe); err != nil {
@@ -80,7 +79,7 @@ func (a *App) addRecipeHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) editRecipeHandler(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 	recipe := common.Recipe{}
 	encoder := json.NewEncoder(w)
 
@@ -105,7 +104,7 @@ func (a *App) editRecipeHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) deleteRecipeHandler(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 	recipe := common.Recipe{}
 	encoder := json.NewEncoder(w)
 	if err := json.NewDecoder(req.Body).Decode(&recipe); err != nil {
