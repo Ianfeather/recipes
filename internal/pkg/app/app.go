@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"recipes/internal/pkg/common"
@@ -14,8 +13,8 @@ import (
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/codegangsta/negroni"
 	"github.com/form3tech-oss/jwt-go"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 // App will hold the dependencies of the application
@@ -38,6 +37,8 @@ type JSONWebKeys struct {
 	X5c []string `json:"x5c"`
 }
 
+type contextKey string
+
 // NewApp returns the application itself
 func NewApp(env *common.Env) (*App, error) {
 	app := &App{
@@ -50,17 +51,7 @@ func healthHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("ok"))
 }
 
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		log.Println(req.URL)
-		next.ServeHTTP(w, req)
-	})
-}
-
-type userMiddleware struct{}
-type contextKey string
-
-func (*userMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func userMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	ctx := context.WithValue(
 		r.Context(),
 		contextKey("userID"),
@@ -136,16 +127,7 @@ func (a *App) GetRouter(base string) (*negroni.Negroni, error) {
 		SigningMethod: jwt.SigningMethodRS256,
 	})
 
-	cors := handlers.CORS(
-		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "PATCH", "DELETE"}),
-		handlers.AllowedHeaders([]string{"*"}),
-		handlers.AllowedOrigins([]string{os.Getenv("SITE_HOST")}),
-		handlers.AllowCredentials(),
-	)
-
 	router := mux.NewRouter()
-	router.Use(cors)
-	router.Use(loggingMiddleware)
 
 	router.HandleFunc(base+"/health", healthHandler).Methods("GET")
 	router.HandleFunc(base+"/recipes", a.recipesHandler).Methods("GET")
@@ -162,9 +144,19 @@ func (a *App) GetRouter(base string) (*negroni.Negroni, error) {
 	router.HandleFunc(base+"/shopping-list/clear", a.clearListHandler).Methods("DELETE")
 	router.HandleFunc(base+"/units", a.getUnitsHandler).Methods("GET")
 
-	n := negroni.New()
+	c := cors.New(cors.Options{
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowedOrigins:   []string{"*"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	})
+
+	n := negroni.New(
+		negroni.NewLogger(),
+	)
+	n.Use(c)
 	n.Use(negroni.HandlerFunc(jwtMiddleware.HandlerWithNext))
-	n.Use(&userMiddleware{})
+	n.Use(negroni.HandlerFunc(userMiddleware))
 	n.UseHandler(router)
 
 	return n, nil
