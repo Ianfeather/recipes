@@ -13,12 +13,12 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
-	"github.com/codegangsta/negroni"
+	negroniadapter "github.com/awslabs/aws-lambda-go-api-proxy/negroni"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/urfave/negroni"
 )
 
-var muxLambda *gorillamux.GorillaMuxAdapter
+var negroniLambda *negroniadapter.NegroniAdapter
 var router *negroni.Negroni
 
 func init() {
@@ -46,16 +46,15 @@ func init() {
 		fmt.Println(err)
 	}
 
-	// muxLambda = gorillamux.New(router)
+	negroniLambda = negroniadapter.New(router)
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return muxLambda.ProxyWithContext(ctx, req)
+	return negroniLambda.ProxyWithContext(ctx, req)
 }
 
 func main() {
 	args := os.Args
-
 	if len(args) > 1 && args[1] == "dev" {
 		server := http.Server{
 			Addr:         ":8080",

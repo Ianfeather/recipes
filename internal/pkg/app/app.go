@@ -11,7 +11,7 @@ import (
 	"recipes/internal/pkg/common"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
-	"github.com/codegangsta/negroni"
+	"github.com/urfave/negroni"
 	"github.com/form3tech-oss/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -109,7 +109,6 @@ func (a *App) GetRouter(base string) (*negroni.Negroni, error) {
 				return token, errors.New("Invalid audience")
 			}
 
-			// Verify 'iss' claim
 			iss := "https://" + os.Getenv("AUTH0_DOMAIN") + "/"
 			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
 			if !checkIss {
@@ -151,9 +150,7 @@ func (a *App) GetRouter(base string) (*negroni.Negroni, error) {
 		AllowCredentials: true,
 	})
 
-	n := negroni.New(
-		negroni.NewLogger(),
-	)
+	n := negroni.New(negroni.NewLogger())
 	n.Use(c)
 	n.Use(negroni.HandlerFunc(jwtMiddleware.HandlerWithNext))
 	n.Use(negroni.HandlerFunc(userMiddleware))
