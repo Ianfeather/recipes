@@ -6,8 +6,6 @@ import (
 	"recipes/internal/pkg/common"
 	"recipes/internal/pkg/service"
 	"strconv"
-
-	"github.com/form3tech-oss/jwt-go"
 )
 
 // ResponseObject is the json response
@@ -72,7 +70,7 @@ func CombineIngredients(r []common.Recipe) map[string]*common.ListIngredient {
 }
 
 func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 
 	recipes, err := service.GetRecipesFromList(userID, a.db)
 	ingredients, err := service.GetIngredientListItems(userID, a.db)
@@ -97,7 +95,7 @@ func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 
 	recipeIDs := make([]string, 0)
 	if err := json.NewDecoder(req.Body).Decode(&recipeIDs); err != nil {
@@ -151,7 +149,7 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) addExtraListItem(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 
 	var extraItem ListItem
 	if err := json.NewDecoder(req.Body).Decode(&extraItem); err != nil {
@@ -176,7 +174,7 @@ func (a *App) addExtraListItem(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) buyListItemHandler(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 
 	var listItem ListItem
 	if err := json.NewDecoder(req.Body).Decode(&listItem); err != nil {
@@ -200,7 +198,7 @@ func (a *App) buyListItemHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) clearListHandler(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 	if err := service.RemoveAllListItems(userID, a.db); err != nil {
 		http.Error(w, "Error removing list items", http.StatusInternalServerError)
 		return

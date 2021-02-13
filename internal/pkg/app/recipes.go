@@ -7,12 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/form3tech-oss/jwt-go"
 )
 
 func (a *App) recipesHandler(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	userID := req.Context().Value(contextKey("userID")).(string)
 	encoder := json.NewEncoder(w)
 	recipes, err := service.GetAllRecipes(a.db, userID)
 

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -57,14 +58,15 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 type userMiddleware struct{}
+type contextKey string
 
 func (*userMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	fmt.Println("The user middleware is executing!")
-	fmt.Println(r.Context().Value("user"))
-	// for header := range r.Header {
-	// 	fmt.Println(header)
-	// }
-	next.ServeHTTP(w, r)
+	ctx := context.WithValue(
+		r.Context(),
+		contextKey("userID"),
+		r.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string),
+	)
+	next.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func getPemCert(token *jwt.Token) (string, error) {
