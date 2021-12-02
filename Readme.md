@@ -25,6 +25,9 @@ CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
 GRANT ALL PRIVILEGES ON bigshop.* TO 'admin'@'localhost';
 ```
 
+#### Auth
+The API is behind auth and I haven't come up with a nice way of configuring that yet. For now I copy an authorization token from prod requests. Grimace face / todo.
+
 ## testing the app
 ```
 go fmt ./...

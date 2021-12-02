@@ -13,12 +13,13 @@ type Recipe struct {
 
 // GetAllRecipes returns all recipes in the recipe table
 func GetAllRecipes(db *sql.DB, userID string) ([]Recipe, error) {
+	accountID, err := GetAccountID(db, userID)
 	recipesQuery := `
 		SELECT id, name FROM recipe
 			WHERE account_id = ?
 			ORDER BY lower(recipe.name);
 	`
-	results, err := db.Query(recipesQuery, userID)
+	results, err := db.Query(recipesQuery, accountID)
 
 	if err != nil {
 		log.Println("Error querying recipes")

@@ -11,10 +11,10 @@ import (
 	"recipes/internal/pkg/common"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
-	"github.com/urfave/negroni"
 	"github.com/form3tech-oss/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+	"github.com/urfave/negroni"
 )
 
 // App will hold the dependencies of the application
