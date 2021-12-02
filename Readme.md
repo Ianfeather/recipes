@@ -12,6 +12,13 @@ In the root of the app:
 This uses a regular server locally and a lambda outside of dev.
 
 ### local setup
+
+To enter the mysql workspace:
+```
+mysql -u root
+use bigshop;
+```
+
 - db user
 ```
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';

@@ -18,7 +18,7 @@ type ListItem struct {
 
 // RemoveAllListItems removes all list items for a user
 func RemoveAllListItems(userID string, db *sql.DB) error {
-	if _, err := db.Exec("DELETE FROM list WHERE user_id = ?;", userID); err != nil {
+	if _, err := db.Exec("DELETE FROM list WHERE account_id = ?;", userID); err != nil {
 		fmt.Println("could not delete ingredients")
 		return err
 	}
@@ -27,7 +27,7 @@ func RemoveAllListItems(userID string, db *sql.DB) error {
 
 // RemoveIngredientListItems removes all ingredient list items
 func RemoveIngredientListItems(userID string, db *sql.DB) error {
-	if _, err := db.Exec("DELETE FROM list WHERE user_id = ? AND type = 'ingredient';", userID); err != nil {
+	if _, err := db.Exec("DELETE FROM list WHERE account_id = ? AND type = 'ingredient';", userID); err != nil {
 		fmt.Println("could not delete ingredients")
 		return err
 	}
@@ -36,7 +36,7 @@ func RemoveIngredientListItems(userID string, db *sql.DB) error {
 
 // AddIngredientListItems adds passed ingredients to the db
 func AddIngredientListItems(userID string, ingredients map[string]*common.ListIngredient, db *sql.DB) error {
-	sqlStr := "INSERT INTO list(user_id, name, type, quantity, department, is_bought, recipe_id, unit_id) VALUES "
+	sqlStr := "INSERT INTO list(account_id, name, type, quantity, department, is_bought, recipe_id, unit_id) VALUES "
 	vals := []interface{}{}
 
 	for name, val := range ingredients {
@@ -57,7 +57,7 @@ func AddIngredientListItems(userID string, ingredients map[string]*common.ListIn
 func AddExtraListItem(userID string, name string, isBought bool, db *sql.DB) error {
 	query := `
 		INSERT INTO list
-			(user_id, name, type, quantity, department, is_bought, unit_id)
+			(account_id, name, type, quantity, department, is_bought, unit_id)
 			VALUES (?, ?, ?, ?, '', ?, ?)
 	`
 	if _, err := db.Exec(query, userID, name, "extra", 0, isBought, 1); err != nil {
@@ -68,7 +68,7 @@ func AddExtraListItem(userID string, name string, isBought bool, db *sql.DB) err
 
 // GetRecipesFromList returns recipes used to create the shopping list
 func GetRecipesFromList(userID string, db *sql.DB) ([]string, error) {
-	query := "SELECT DISTINCT recipe_id FROM list WHERE user_id = ? and type = 'ingredient';"
+	query := "SELECT DISTINCT recipe_id FROM list WHERE account_id = ? and type = 'ingredient';"
 	results, err := db.Query(query, userID)
 
 	if err != nil {
@@ -89,7 +89,7 @@ func GetRecipesFromList(userID string, db *sql.DB) ([]string, error) {
 
 // GetIngredientListItems returns items of type 'ingredient'
 func GetIngredientListItems(userID string, db *sql.DB) (map[string]*common.ListIngredient, error) {
-	query := "SELECT list.name as name, unit.name as unit, quantity, department, is_bought as isBought FROM list INNER JOIN unit on unit_id = unit.id WHERE user_id = ? and type = 'ingredient';"
+	query := "SELECT list.name as name, unit.name as unit, quantity, department, is_bought as isBought FROM list INNER JOIN unit on unit_id = unit.id WHERE account_id = ? and type = 'ingredient';"
 	results, err := db.Query(query, userID)
 
 	if err != nil {
@@ -123,7 +123,7 @@ func GetIngredientListItems(userID string, db *sql.DB) (map[string]*common.ListI
 
 // GetExtraListItems returns items of type 'extra'
 func GetExtraListItems(userID string, db *sql.DB) (map[string]*common.ListIngredient, error) {
-	query := "SELECT list.name as name, unit.name as unit, quantity, department, is_bought as isBought FROM list INNER JOIN unit on unit_id = unit.id WHERE user_id = ? and type = 'extra';"
+	query := "SELECT list.name as name, unit.name as unit, quantity, department, is_bought as isBought FROM list INNER JOIN unit on unit_id = unit.id WHERE account_id = ? and type = 'extra';"
 	results, err := db.Query(query, userID)
 
 	if err != nil {
@@ -155,7 +155,7 @@ func GetExtraListItems(userID string, db *sql.DB) (map[string]*common.ListIngred
 
 // BuyListItem toggles the isBought state of a list item in the db
 func BuyListItem(userID string, name string, isBought bool, db *sql.DB) error {
-	if _, err := db.Exec("UPDATE list SET is_bought = ? WHERE name = ? AND user_id = ?", isBought, name, userID); err != nil {
+	if _, err := db.Exec("UPDATE list SET is_bought = ? WHERE name = ? AND account_id = ?", isBought, name, userID); err != nil {
 		return err
 	}
 	return nil

@@ -15,7 +15,7 @@ type Recipe struct {
 func GetAllRecipes(db *sql.DB, userID string) ([]Recipe, error) {
 	recipesQuery := `
 		SELECT id, name FROM recipe
-			WHERE user_id = ?
+			WHERE account_id = ?
 			ORDER BY lower(recipe.name);
 	`
 	results, err := db.Query(recipesQuery, userID)
