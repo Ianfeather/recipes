@@ -2,6 +2,8 @@ package service
 
 import (
 	"database/sql"
+	"log"
+	"recipes/internal/pkg/common"
 )
 
 // GetAccountID returns the account ID for a user
@@ -13,4 +15,76 @@ func GetAccountID(db *sql.DB, userID string) (int, error) {
 		return 0, err
 	}
 	return accountID, nil
+}
+
+func GetAccount(db *sql.DB, userID string) (a *common.Account, e error) {
+	accountID, err := GetAccountID(db, userID)
+
+	if err != nil {
+		log.Println("Error querying account table")
+		return nil, err
+	}
+
+	accountQuery := `
+		SELECT user_id, name FROM account_user
+			LEFT JOIN user on user.id = account_user.user_id
+			WHERE account_id = ?
+	`
+	results, err := db.Query(accountQuery, accountID)
+
+	if err != nil {
+		log.Println("Error querying account table")
+		return nil, err
+	}
+
+	users := make([]common.User, 0)
+
+	for results.Next() {
+		user := common.User{}
+		err = results.Scan(&user.ID, &user.Name)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	account := &common.Account{
+		ID:    accountID,
+		Users: users,
+	}
+	return account, nil
+}
+
+func AddUser(db *sql.DB, user common.User) error {
+	userQuery := `INSERT INTO user (id, name) VALUES (?,?) ON DUPLICATE KEY UPDATE id=id;`
+	// TODO: name
+	_, err := db.Query(userQuery, user.ID, user.Name)
+	if err != nil {
+		log.Println("Error adding user")
+		return err
+	}
+	return nil
+}
+
+func AddUserToAccount(db *sql.DB, accountID int, user common.User) error {
+	// TODO: if the user doesn't exist in our user table we need to add them first
+	userQuery := `INSERT INTO user (id, name) VALUES (?,?) ON DUPLICATE KEY UPDATE id=id;`
+	_, err := db.Query(userQuery, user.ID, user.Name)
+
+	accountQuery := `INSERT INTO user_account (user_id, account_id) VALUES (?,?);`
+	_, err = db.Query(accountQuery, user.ID, accountID)
+	if err != nil {
+		log.Println("Error adding user to account")
+		return err
+	}
+	return nil
+}
+
+func RemoveUserFromAccount(db *sql.DB, accountID int, user common.User) error {
+	accountQuery := `DELETE FROM user_account WHERE user_id = ? AND account_id = ?;`
+	_, err := db.Query(accountQuery, user.ID, accountID)
+	if err != nil {
+		log.Println("Error adding user to account")
+		return err
+	}
+	return nil
 }

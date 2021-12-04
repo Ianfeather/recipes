@@ -26,7 +26,7 @@ GRANT ALL PRIVILEGES ON bigshop.* TO 'admin'@'localhost';
 ```
 
 #### Auth
-The API is behind auth and I haven't come up with a nice way of configuring that yet. For now I copy an authorization token from prod requests. Grimace face / todo.
+The API is behind auth and I haven't come up with a nice way of configuring that yet for use via curl/postman. Via the app it's fine. For now I copy an authorization token from the application requests and use that in the auth header. Big todo.
 
 ## testing the app
 ```

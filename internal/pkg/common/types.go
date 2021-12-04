@@ -36,3 +36,15 @@ type ListIngredient struct {
 	RecipeID   int     `json:"recipe_id"`
 	Department string  `json:"department"`
 }
+
+// User object
+type User struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// Account holds accounts and users
+type Account struct {
+	ID    int    `json:"id"`
+	Users []User `json:"users`
+}

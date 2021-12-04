@@ -55,6 +55,7 @@ func userMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFun
 	ctx := context.WithValue(
 		r.Context(),
 		contextKey("userID"),
+		// TODO: Add account ID here too via DB lookup?
 		r.Context().Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string),
 	)
 	next.ServeHTTP(w, r.WithContext(ctx))
@@ -142,6 +143,9 @@ func (a *App) GetRouter(base string) (*negroni.Negroni, error) {
 	router.HandleFunc(base+"/shopping-list/extra", a.addExtraListItem).Methods("POST")
 	router.HandleFunc(base+"/shopping-list/clear", a.clearListHandler).Methods("DELETE")
 	router.HandleFunc(base+"/units", a.getUnitsHandler).Methods("GET")
+	router.HandleFunc(base+"/account", a.getAccount).Methods("GET")
+	router.HandleFunc(base+"/account/add", a.addUserToAccount).Methods("POST")
+	router.HandleFunc(base+"/account/remove", a.removeUserFromAccount).Methods("DELETE")
 
 	c := cors.New(cors.Options{
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
