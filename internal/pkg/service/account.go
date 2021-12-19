@@ -6,6 +6,27 @@ import (
 	"recipes/internal/pkg/common"
 )
 
+// CreateAccount creates a new account for a user
+func CreateAccount(db *sql.DB, user common.User) error {
+	var accountID int
+	accountQuery := `SELECT account_id FROM account_user WHERE user_id = ?`
+	err := db.QueryRow(accountQuery, user.ID).Scan(accountID)
+	if err != nil && err == sql.ErrNoRows {
+		// create a new account
+		res, _ := db.Exec(`INSERT INTO account (id) VALUES (null)`)
+		id, _ := res.LastInsertId()
+		accountID = int(id)
+		accountUserQuery := `INSERT INTO account_user (user_id, account_id) VALUES (?, ?)`
+		_, err = db.Exec(accountUserQuery, user.ID, accountID)
+		if err != nil {
+			log.Println("Error creating new account")
+			return err
+		}
+	}
+	return nil
+}
+
+
 // GetAccountID returns the account ID for a user
 func GetAccountID(db *sql.DB, userID string) (int, error) {
 	var accountID int
@@ -52,17 +73,6 @@ func GetAccount(db *sql.DB, userID string) (a *common.Account, e error) {
 		Users: users,
 	}
 	return account, nil
-}
-
-func AddUser(db *sql.DB, user common.User) error {
-	userQuery := `INSERT INTO user (id, name) VALUES (?,?) ON DUPLICATE KEY UPDATE id=id;`
-	// TODO: name
-	_, err := db.Query(userQuery, user.ID, user.Name)
-	if err != nil {
-		log.Println("Error adding user")
-		return err
-	}
-	return nil
 }
 
 func AddUserToAccount(db *sql.DB, accountID int, user common.User) error {

@@ -32,22 +32,6 @@ func (a *App) getAccount(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (a *App) addUser(w http.ResponseWriter, req *http.Request) {
-	// To be called by auth0? Or added to middleware maybe
-	// TODO: Look up name on auth0? or prompt for it?
-	user := common.User{
-		ID:   req.Context().Value(contextKey("userID")).(string),
-		Name: "",
-	}
-
-	err := service.AddUser(a.db, user)
-	if err != nil {
-		log.Println("Error: could not add new user")
-		http.Error(w, "could not add new user", http.StatusInternalServerError)
-		return
-	}
-}
-
 func (a *App) addUserToAccount(w http.ResponseWriter, req *http.Request) {
 	encoder := json.NewEncoder(w)
 	userID := req.Context().Value(contextKey("userID")).(string)

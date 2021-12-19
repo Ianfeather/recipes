@@ -1,6 +1,7 @@
 CREATE TABLE `user` (
   `id` varchar(255) NOT NULL COMMENT 'auth0 id',
   `name` varchar(255),
+  `email` varchar(255),
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `last_logged_in_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
