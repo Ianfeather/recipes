@@ -25,3 +25,13 @@ func AddUser(db *sql.DB, user common.User) error {
 	}
 	return nil
 }
+
+func GetUser(db *sql.DB, userID string) (u *common.User, e error) {
+	userQuery := `SELECT id, name, email FROM user WHERE id = ?`
+	user := &common.User{}
+
+	if err := db.QueryRow(userQuery, userID).Scan(&user.ID, &user.Name, &user.Email); err != nil {
+		return nil, err
+	}
+	return user, nil
+}
