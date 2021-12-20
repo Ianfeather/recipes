@@ -51,11 +51,28 @@ func (a *App) inviteUser(w http.ResponseWriter, req *http.Request) {
 	}
 	currentUser, err := service.GetUser(a.db, currentUserID)
 	if err != nil {
+		log.Println("Error finding current user")
+		http.Error(w, "Error finding current user", http.StatusBadRequest)
+		return
+	}
+	account, err := service.GetAccount(a.db, currentUserID)
+	if err != nil {
 		log.Println("Error finding account for current user")
 		http.Error(w, "Error finding account for current user", http.StatusBadRequest)
 		return
 	}
 
+	// Generate a token and write it to the invites table
+	token, _ := common.RandToken(32)
+	if err = service.CreateInvite(a.db, token, account.ID, userToInvite.Email, currentUserID); err != nil {
+		log.Println("Error creating Invite")
+		http.Error(w, "Error creating Invite", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println(currentUser)
+
+	// Send the email
 	from := mail.NewEmail("Ian Feather", "info@ianfeather.co.uk")
 	subject := "You have been invited to join a BigShop Account"
 	to := mail.NewEmail("BigShop User", userToInvite.Email)
@@ -64,7 +81,6 @@ func (a *App) inviteUser(w http.ResponseWriter, req *http.Request) {
     <p>You can accept this by clicking below:</p>
     <a href="https://pleeyu7yrd.execute-api.us-east-1.amazonaws.com/prod/invitation/%s">Accept invite</a>
   `
-	token, _ := common.RandToken(32)
 	message := mail.NewSingleEmail(from, subject, to, "", fmt.Sprintf(htmlContent, currentUser.Name, token))
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 	_, err = client.Send(message)
@@ -75,5 +91,5 @@ func (a *App) inviteUser(w http.ResponseWriter, req *http.Request) {
 	} else {
 		return
 	}
-
 }
+
