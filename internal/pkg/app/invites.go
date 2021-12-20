@@ -27,6 +27,13 @@ func (a *App) acceptInvite(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Error finding invite", http.StatusBadRequest)
 		return
 	}
+
+	// Disable old user account
+	if err = service.DisableUserAccount(a.db, *currentUser); err != nil {
+		http.Error(w, "Error disabling user account", http.StatusInternalServerError)
+		return
+	}
+
 	// Add user to the account
 	if err = service.AddUserToAccount(a.db, *accountID, *currentUser); err != nil {
 		http.Error(w, "Error adding user to the account", http.StatusInternalServerError)
@@ -58,5 +65,18 @@ func (a *App) getInvites(w http.ResponseWriter, req *http.Request) {
 	if err = encoder.Encode(invites); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
 	}
+}
 
+func (a *App) rejectInvite(w http.ResponseWriter, req *http.Request) {
+	var body struct {
+		Token string
+	}
+	if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
+		http.Error(w, "Error decoding json body", http.StatusBadRequest)
+		return
+	}
+	if err := service.DeleteInviteByToken(a.db, body.Token); err != nil {
+		http.Error(w, "Error deleting invite", http.StatusInternalServerError)
+		return
+	}
 }

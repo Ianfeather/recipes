@@ -8,3 +8,5 @@ CREATE TABLE `invite` (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`account`, `email`)
 );
+
+ALTER TABLE `account_user` ADD COLUMN `enabled` boolean DEFAULT true;

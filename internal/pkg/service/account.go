@@ -30,7 +30,7 @@ func CreateAccount(db *sql.DB, user common.User) error {
 // GetAccountID returns the account ID for a user
 func GetAccountID(db *sql.DB, userID string) (int, error) {
 	var accountID int
-	accountQuery := `SELECT account_id from account_user WHERE user_id = ?;`
+	accountQuery := `SELECT account_id from account_user WHERE user_id = ? AND enabled = true;`
 	if err := db.QueryRow(accountQuery, userID).Scan(&accountID); err != nil {
 		// TODO: Return an error of type unknown user
 		return 0, err
@@ -49,7 +49,7 @@ func GetAccount(db *sql.DB, userID string) (a *common.Account, e error) {
 	accountQuery := `
 		SELECT user_id, name FROM account_user
 			LEFT JOIN user on user.id = account_user.user_id
-			WHERE account_id = ?
+			WHERE account_id = ? AND enabled = true;
 	`
 	results, err := db.Query(accountQuery, accountID)
 
@@ -80,10 +80,22 @@ func AddUserToAccount(db *sql.DB, accountID int, user common.User) error {
 	userQuery := `INSERT INTO user (id, name) VALUES (?,?) ON DUPLICATE KEY UPDATE id=id;`
 	_, err := db.Query(userQuery, user.ID, user.Name)
 
-	accountQuery := `INSERT INTO user_account (user_id, account_id) VALUES (?,?);`
+	accountQuery := `INSERT INTO account_user (user_id, account_id) VALUES (?,?);`
 	_, err = db.Query(accountQuery, user.ID, accountID)
 	if err != nil {
 		log.Println("Error adding user to account")
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func DisableUserAccount(db *sql.DB, user common.User) error {
+	query := `UPDATE account_user SET enabled = false WHERE user_id = ?`;
+	_, err := db.Exec(query, user.ID)
+	if err != nil {
+		log.Println("Error disable user account")
+		log.Println(err)
 		return err
 	}
 	return nil

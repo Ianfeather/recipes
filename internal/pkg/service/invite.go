@@ -2,6 +2,7 @@ package service
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"recipes/internal/pkg/common"
 	"time"
@@ -56,8 +57,10 @@ func GetInvites(db *sql.DB, email string) (i []common.Invite, e error) {
 
 func GetInvite(db *sql.DB, token string, email string) (a *int, e error) {
 	var accountID int
+	fmt.Println(email)
+	fmt.Println(token)
 	inviteQuery := `SELECT account from invite WHERE email = ? and token = ?;`
-	if err := db.QueryRow(inviteQuery, email, token).Scan(accountID); err != nil {
+	if err := db.QueryRow(inviteQuery, email, token).Scan(&accountID); err != nil {
 		log.Println("Error querying invite")
 		log.Println(err)
 		return nil, err
@@ -69,7 +72,18 @@ func DeleteInvite(db *sql.DB, accountID int, email string) error {
 	inviteQuery := `DELETE from invite WHERE account = ? and email = ?;`
 	_, err := db.Exec(inviteQuery, accountID, email)
 	if err != nil {
-		log.Println("Error querying invite")
+		log.Println("Error deleting invite")
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func DeleteInviteByToken(db *sql.DB, token string) error {
+	inviteQuery := `DELETE from invite WHERE token = ?;`
+	_, err := db.Exec(inviteQuery, token)
+	if err != nil {
+		log.Println("Error deleting invite")
 		log.Println(err)
 		return err
 	}

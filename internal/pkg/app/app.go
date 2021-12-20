@@ -150,6 +150,7 @@ func (a *App) GetRouter(base string) (*negroni.Negroni, error) {
 	router.HandleFunc(base+"/invite", a.inviteUser).Methods("POST")
 	router.HandleFunc(base+"/invites", a.getInvites).Methods("GET")
 	router.HandleFunc(base+"/invite/accept", a.acceptInvite).Methods("POST")
+	router.HandleFunc(base+"/invite/reject", a.rejectInvite).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
