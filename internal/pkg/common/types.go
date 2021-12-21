@@ -49,3 +49,9 @@ type Account struct {
 	ID    int    `json:"id"`
 	Users []User `json:"users`
 }
+
+// Invite holds information about account collaboration invites
+type Invite struct {
+	Token string `json:"token"`
+	AccountHolder string `json:"account_holder"`
+}

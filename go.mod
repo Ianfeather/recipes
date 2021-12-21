@@ -18,6 +18,8 @@ require (
 	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/onsi/gomega v1.10.4 // indirect
 	github.com/rs/cors v1.7.0
+	github.com/sendgrid/rest v2.6.6+incompatible // indirect
+	github.com/sendgrid/sendgrid-go v3.10.4+incompatible
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/urfave/negroni v1.0.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
