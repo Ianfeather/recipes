@@ -70,8 +70,6 @@ func (a *App) inviteUser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(currentUser)
-
 	// Send the email
 	from := mail.NewEmail("Ian Feather", "info@ianfeather.co.uk")
 	subject := "You have been invited to join a BigShop Account"
@@ -87,8 +85,6 @@ func (a *App) inviteUser(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Error sending email", http.StatusBadRequest)
-		return
-	} else {
 		return
 	}
 }

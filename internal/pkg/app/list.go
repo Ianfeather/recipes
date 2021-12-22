@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"recipes/internal/pkg/common"
 	"recipes/internal/pkg/service"
@@ -122,12 +123,17 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 
 	combinedIngredients := CombineIngredients(recipes)
 	if err := service.RemoveIngredientListItems(userID, a.db); err != nil {
+		log.Println("Cannot delete list items")
 		http.Error(w, "Cannot delete list items", http.StatusInternalServerError)
 		return
 	}
-	if err := service.AddIngredientListItems(userID, combinedIngredients, a.db); err != nil {
-		http.Error(w, "Cannot add list items", http.StatusInternalServerError)
-		return
+
+	if len(combinedIngredients) > 0 {
+		if err := service.AddIngredientListItems(userID, combinedIngredients, a.db); err != nil {
+			log.Println("Cannot add list items")
+			http.Error(w, "Cannot add list items", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// Return the new items + extras
@@ -137,6 +143,7 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		http.Error(w, "Cannot get extra list items", http.StatusInternalServerError)
+		log.Println("Cannot get extra list items")
 		return
 	}
 
