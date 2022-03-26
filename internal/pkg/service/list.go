@@ -16,6 +16,35 @@ type ListItem struct {
 	IsBought   bool
 }
 
+// GetShoppingList returns the full shopping list for a user
+func GetShoppingList(userID string, db *sql.DB) (*common.ShoppingList, error) {
+	recipes, err := GetRecipesFromList(userID, db)
+	if err != nil {
+		fmt.Println("could not get recipes from list")
+		return nil, err
+	}
+
+	ingredients, err := GetIngredientListItems(userID, db)
+	if err != nil {
+		fmt.Println("could not get ingredients from list")
+		return nil, err
+	}
+
+	extras, err := GetExtraListItems(userID, db)
+	if err != nil {
+		fmt.Println("could not get extra list items")
+		return nil, err
+	}
+
+	list := &common.ShoppingList{
+		Recipes:     recipes,
+		Ingredients: ingredients,
+		Extras:      extras,
+	}
+
+	return list, nil
+}
+
 // RemoveAllListItems removes all list items for a user
 func RemoveAllListItems(userID string, db *sql.DB) error {
 	accountID, err := GetAccountID(db, userID)

@@ -9,13 +9,6 @@ import (
 	"strconv"
 )
 
-// ResponseObject is the json response
-type ResponseObject struct {
-	Recipes     []string                          `json:"recipes"`
-	Ingredients map[string]*common.ListIngredient `json:"ingredients"`
-	Extras      map[string]*common.ListIngredient `json:"extras"`
-}
-
 // ListItem is used for updating items in the DB
 type ListItem struct {
 	IsBought bool
@@ -73,23 +66,15 @@ func CombineIngredients(r []common.Recipe) map[string]*common.ListIngredient {
 func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value(contextKey("userID")).(string)
 
-	recipes, err := service.GetRecipesFromList(userID, a.db)
-	ingredients, err := service.GetIngredientListItems(userID, a.db)
-	extras, err := service.GetExtraListItems(userID, a.db)
+	list, err := service.GetShoppingList(userID, a.db)
 
 	if err != nil {
-		http.Error(w, "Error Fetching List Items", http.StatusInternalServerError)
+		http.Error(w, "Error Fetching Shopping List", http.StatusInternalServerError)
 		return
 	}
 
-	response := &ResponseObject{
-		Recipes:     recipes,
-		Ingredients: ingredients,
-		Extras:      extras,
-	}
-
 	encoder := json.NewEncoder(w)
-	if err = encoder.Encode(response); err != nil {
+	if err = encoder.Encode(list); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
 		return
 	}
@@ -104,7 +89,6 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response := &ResponseObject{}
 	recipes := make([]common.Recipe, 0)
 
 	for i := 0; i < len(recipeIDs); i++ {
@@ -136,10 +120,7 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	// Return the new items + extras
-	response.Recipes = recipeIDs
-	response.Ingredients = combinedIngredients
-	extras, err := service.GetExtraListItems(userID, a.db)
+	list, err := service.GetShoppingList(userID, a.db)
 
 	if err != nil {
 		http.Error(w, "Cannot get extra list items", http.StatusInternalServerError)
@@ -147,10 +128,8 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response.Extras = extras
-
 	encoder := json.NewEncoder(w)
-	if err := encoder.Encode(response); err != nil {
+	if err := encoder.Encode(list); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
 	}
 }
@@ -198,8 +177,15 @@ func (a *App) buyListItemHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Error marking item as bought", http.StatusInternalServerError)
 		return
 	}
+
+	list, err := service.GetShoppingList(userID, a.db)
+	if err != nil {
+		http.Error(w, "Error getting shopping list", http.StatusInternalServerError)
+		return
+	}
+
 	encoder := json.NewEncoder(w)
-	if err := encoder.Encode(listItem); err != nil {
+	if err := encoder.Encode(list); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
 	}
 }
@@ -211,7 +197,7 @@ func (a *App) clearListHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response := &ResponseObject{}
+	response := &common.ShoppingList{}
 	encoder := json.NewEncoder(w)
 	if err := encoder.Encode(response); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)

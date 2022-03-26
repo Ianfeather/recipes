@@ -12,6 +12,13 @@ type SimpleResponse struct {
 	Status string `json:"status"`
 }
 
+// ShoppingList contains the data model for a user's list
+type ShoppingList struct {
+	Recipes     []string                  `json:"recipes"`
+	Ingredients map[string]*ListIngredient `json:"ingredients"`
+	Extras      map[string]*ListIngredient `json:"extras"`
+}
+
 // Ingredient contains ingredient fields
 type Ingredient struct {
 	Name       string `json:"name"`
