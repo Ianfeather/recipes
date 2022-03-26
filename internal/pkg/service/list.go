@@ -16,6 +16,11 @@ type ListItem struct {
 	IsBought   bool
 }
 
+// GetShoppingList returns the full shopping list for a user
+func GetShoppingList(userID, string, db *sql.DB) error {
+
+}
+
 // RemoveAllListItems removes all list items for a user
 func RemoveAllListItems(userID string, db *sql.DB) error {
 	accountID, err := GetAccountID(db, userID)

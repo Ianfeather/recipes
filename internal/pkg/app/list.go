@@ -9,13 +9,6 @@ import (
 	"strconv"
 )
 
-// ResponseObject is the json response
-type ResponseObject struct {
-	Recipes     []string                          `json:"recipes"`
-	Ingredients map[string]*common.ListIngredient `json:"ingredients"`
-	Extras      map[string]*common.ListIngredient `json:"extras"`
-}
-
 // ListItem is used for updating items in the DB
 type ListItem struct {
 	IsBought bool
@@ -74,15 +67,24 @@ func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value(contextKey("userID")).(string)
 
 	recipes, err := service.GetRecipesFromList(userID, a.db)
-	ingredients, err := service.GetIngredientListItems(userID, a.db)
-	extras, err := service.GetExtraListItems(userID, a.db)
+	if err != nil {
+		http.Error(w, "Error Fetching Recipes", http.StatusInternalServerError)
+		return
+	}
 
+	ingredients, err := service.GetIngredientListItems(userID, a.db)
+	if err != nil {
+		http.Error(w, "Error Fetching Ingredients Items", http.StatusInternalServerError)
+		return
+	}
+
+	extras, err := service.GetExtraListItems(userID, a.db)
 	if err != nil {
 		http.Error(w, "Error Fetching List Items", http.StatusInternalServerError)
 		return
 	}
 
-	response := &ResponseObject{
+	response := &common.ShoppingList{
 		Recipes:     recipes,
 		Ingredients: ingredients,
 		Extras:      extras,
@@ -104,7 +106,7 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response := &ResponseObject{}
+	response := &common.ShoppingList{}
 	recipes := make([]common.Recipe, 0)
 
 	for i := 0; i < len(recipeIDs); i++ {
@@ -211,7 +213,7 @@ func (a *App) clearListHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response := &ResponseObject{}
+	response := &common.ShoppingList{}
 	encoder := json.NewEncoder(w)
 	if err := encoder.Encode(response); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
