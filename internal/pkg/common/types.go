@@ -25,6 +25,7 @@ type Recipe struct {
 	Name        string       `json:"name"`
 	ID          int          `json:"id"`
 	RemoteURL   string       `json:"remoteUrl"`
+	Notes       string       `json:"notes"`
 	Ingredients []Ingredient `json:"ingredients"`
 }
 

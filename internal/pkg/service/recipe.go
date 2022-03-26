@@ -5,6 +5,7 @@ import (
 
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 func getIngredientsByRecipeID(id int, db *sql.DB) ([]common.Ingredient, error) {
@@ -26,6 +27,7 @@ func getIngredientsByRecipeID(id int, db *sql.DB) ([]common.Ingredient, error) {
 	ingredients := make([]common.Ingredient, 0)
 
 	if err != nil {
+		log.Println(err);
 		return nil, err
 	}
 
@@ -35,6 +37,7 @@ func getIngredientsByRecipeID(id int, db *sql.DB) ([]common.Ingredient, error) {
 		err = results.Scan(&ingredient.Name, &ingredient.Unit, &ingredient.Quantity, &department)
 
 		if err != nil {
+			log.Println(err);
 			return nil, err
 		}
 
@@ -57,17 +60,22 @@ func GetRecipeBySlug(slug string, userID string, db *sql.DB) (r *common.Recipe, 
 	}
 	recipe := &common.Recipe{Ingredients: []common.Ingredient{}}
 	query := `
-		SELECT id, name, remote_url
+		SELECT id, name, remote_url, notes
 			FROM recipe
 			WHERE slug = ? AND account_id = ?;`
 
 	var remoteURL sql.NullString
-	if err := db.QueryRow(query, slug, accountID).Scan(&recipe.ID, &recipe.Name, &remoteURL); err != nil {
+	var notes sql.NullString
+	if err := db.QueryRow(query, slug, accountID).Scan(&recipe.ID, &recipe.Name, &remoteURL, &notes); err != nil {
 		return nil, err
 	}
 
 	if remoteURL.Valid {
 		recipe.RemoteURL = remoteURL.String
+	}
+
+	if notes.Valid {
+		recipe.Notes = notes.String
 	}
 
 	ingredients, err := getIngredientsByRecipeID(recipe.ID, db)
@@ -85,16 +93,19 @@ func GetRecipeBySlug(slug string, userID string, db *sql.DB) (r *common.Recipe, 
 func GetRecipeByID(id int, userID string, db *sql.DB) (r *common.Recipe, e error) {
 	accountID, err := GetAccountID(db, userID)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	recipe := &common.Recipe{Ingredients: []common.Ingredient{}}
 	query := `
-		SELECT id, name, remote_url
+		SELECT id, name, remote_url, notes
 			FROM recipe
 			WHERE id = ? AND account_id = ?;`
 
 	var remoteURL sql.NullString
-	if err := db.QueryRow(query, id, accountID).Scan(&recipe.ID, &recipe.Name, &remoteURL); err != nil {
+	var notes sql.NullString
+	if err := db.QueryRow(query, id, accountID).Scan(&recipe.ID, &recipe.Name, &remoteURL, &notes); err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
@@ -102,10 +113,14 @@ func GetRecipeByID(id int, userID string, db *sql.DB) (r *common.Recipe, e error
 		recipe.RemoteURL = remoteURL.String
 	}
 
+	if notes.Valid {
+		recipe.Notes = notes.String
+	}
+
 	ingredients, err := getIngredientsByRecipeID(id, db)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return nil, err
 	}
 
@@ -119,8 +134,8 @@ func AddRecipe(recipe common.Recipe, userID string, db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	query := "INSERT INTO recipe (name, slug, remote_url, account_id) VALUES (?, ?, ?, ?);"
-	res, err := db.Exec(query, recipe.Name, common.Slugify(recipe.Name), recipe.RemoteURL, accountID)
+	query := "INSERT INTO recipe (name, slug, remote_url, notes, account_id) VALUES (?, ?, ?, ?, ?);"
+	res, err := db.Exec(query, recipe.Name, common.Slugify(recipe.Name), recipe.RemoteURL, recipe.Notes, accountID)
 
 	if err != nil {
 		fmt.Println("could not insert recipe")
@@ -154,21 +169,25 @@ func EditRecipe(recipe common.Recipe, userID string, db *sql.DB) error {
 		return err
 	}
 
-	updateQuery := "UPDATE recipe SET name=?, remote_url=? WHERE id=? AND account_id=?"
-	if _, err := db.Exec(updateQuery, recipe.Name, recipe.RemoteURL, recipe.ID, accountID); err != nil {
+	updateQuery := "UPDATE recipe SET name=?, remote_url=?, notes=? WHERE id=? AND account_id=?"
+	if _, err := db.Exec(updateQuery, recipe.Name, recipe.RemoteURL, recipe.Notes, recipe.ID, accountID); err != nil {
+		log.Println(err)
 		return err
 	}
 
 	if err := insertIngredients(recipe, db); err != nil {
+		log.Println(err)
 		return err
 	}
 
 	// Delete the existing relationships between recipe & ingredients
 	if _, err := db.Exec("DELETE FROM part WHERE recipe_id=?", recipe.ID); err != nil {
+		log.Println(err)
 		return err
 	}
 
 	if err := insertParts(recipe, db); err != nil {
+		log.Println(err)
 		return err
 	}
 	return nil
