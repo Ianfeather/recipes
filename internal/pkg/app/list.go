@@ -66,32 +66,15 @@ func CombineIngredients(r []common.Recipe) map[string]*common.ListIngredient {
 func (a *App) getListHandler(w http.ResponseWriter, req *http.Request) {
 	userID := req.Context().Value(contextKey("userID")).(string)
 
-	recipes, err := service.GetRecipesFromList(userID, a.db)
-	if err != nil {
-		http.Error(w, "Error Fetching Recipes", http.StatusInternalServerError)
-		return
-	}
+	list, err := service.GetShoppingList(userID, a.db)
 
-	ingredients, err := service.GetIngredientListItems(userID, a.db)
 	if err != nil {
-		http.Error(w, "Error Fetching Ingredients Items", http.StatusInternalServerError)
+		http.Error(w, "Error Fetching Shopping List", http.StatusInternalServerError)
 		return
-	}
-
-	extras, err := service.GetExtraListItems(userID, a.db)
-	if err != nil {
-		http.Error(w, "Error Fetching List Items", http.StatusInternalServerError)
-		return
-	}
-
-	response := &common.ShoppingList{
-		Recipes:     recipes,
-		Ingredients: ingredients,
-		Extras:      extras,
 	}
 
 	encoder := json.NewEncoder(w)
-	if err = encoder.Encode(response); err != nil {
+	if err = encoder.Encode(list); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
 		return
 	}
