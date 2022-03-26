@@ -89,7 +89,6 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response := &common.ShoppingList{}
 	recipes := make([]common.Recipe, 0)
 
 	for i := 0; i < len(recipeIDs); i++ {
@@ -121,10 +120,7 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	// Return the new items + extras
-	response.Recipes = recipeIDs
-	response.Ingredients = combinedIngredients
-	extras, err := service.GetExtraListItems(userID, a.db)
+	list, err := service.GetShoppingList(userID, a.db)
 
 	if err != nil {
 		http.Error(w, "Cannot get extra list items", http.StatusInternalServerError)
@@ -132,10 +128,8 @@ func (a *App) createListHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response.Extras = extras
-
 	encoder := json.NewEncoder(w)
-	if err := encoder.Encode(response); err != nil {
+	if err := encoder.Encode(list); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
 	}
 }
@@ -183,8 +177,15 @@ func (a *App) buyListItemHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Error marking item as bought", http.StatusInternalServerError)
 		return
 	}
+
+	list, err := service.GetShoppingList(userID, a.db)
+	if err != nil {
+		http.Error(w, "Error getting shopping list", http.StatusInternalServerError)
+		return
+	}
+
 	encoder := json.NewEncoder(w)
-	if err := encoder.Encode(listItem); err != nil {
+	if err := encoder.Encode(list); err != nil {
 		http.Error(w, "Error encoding json", http.StatusInternalServerError)
 	}
 }
