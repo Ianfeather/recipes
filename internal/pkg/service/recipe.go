@@ -41,6 +41,9 @@ func getIngredientsByRecipeID(id int, db *sql.DB) ([]common.Ingredient, error) {
 			return nil, err
 		}
 
+		log.Println("ingredient");
+		log.Println(ingredient);
+
 		if department.Valid {
 			ingredient.Department = department.String
 		} else {
