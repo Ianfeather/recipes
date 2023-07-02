@@ -10,6 +10,7 @@ In the root of the app:
 - visit http://localhost:8080/recipes
 
 This uses a regular server locally and a lambda outside of dev.
+The lambda connects to planetscale DB.
 
 ### local setup
 
@@ -56,5 +57,5 @@ Local builds can be deployed manually with the following:
 - [lambda](https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions/recipes)
 - [api gateway](https://console.aws.amazon.com/apigateway/home?region=us-east-1#/apis/pleeyu7yrd/stages/prod)
 - [cloudwatch logs](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/$252Faws$252Flambda$252Frecipes)
-- [RDS database](https://console.aws.amazon.com/rds/home?region=us-east-1#database:id=big-shop;is-cluster=false;tab=maintenance-and-backups)
+- [PlanetScale DB](https://app.planetscale.com/ianfeather/bigshop)
 - [Auth0 (for managing user)](https://manage.auth0.com/dashboard/eu/dev-x-n37k6b/applications/HxkTOH3ZYxjbsgrVI4ii1CV2TQx7hk9G/settings)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -22,13 +23,15 @@ var negroniLambda *negroniadapter.NegroniAdapter
 var router *negroni.Negroni
 
 func init() {
-	pass := os.Getenv("DB_PASSWORD")
-	dbHost := os.Getenv("DB_HOST")
-	db, err := sql.Open("mysql", fmt.Sprintf("admin:%s@tcp(%s:3306)/bigshop", pass, dbHost))
+	db, err := sql.Open("mysql", os.Getenv("DSN"))
 
 	if err != nil {
 		fmt.Println("Failed to connect to database")
 		panic(err.Error())
+	}
+
+	if err := db.Ping(); err != nil {
+		log.Fatalf("failed to ping: %v", err)
 	}
 
 	env := &common.Env{DB: db}
