@@ -23,11 +23,7 @@ var negroniLambda *negroniadapter.NegroniAdapter
 var router *negroni.Negroni
 
 func init() {
-
-	// pass := os.Getenv("DB_PASSWORD")
-	// dbHost := os.Getenv("DB_HOST")
 	db, err := sql.Open("mysql", os.Getenv("DSN"))
-	// db, err := sql.Open("mysql", fmt.Sprintf("admin:%s@tcp(%s:3306)/bigshop", pass, dbHost))
 
 	if err != nil {
 		fmt.Println("Failed to connect to database")
